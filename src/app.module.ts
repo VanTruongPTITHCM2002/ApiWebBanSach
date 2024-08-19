@@ -17,6 +17,7 @@ import { BooksModule } from './books/books.module';
 import { CartsModule } from './carts/carts.module';
 import { OrdersModule } from './orders/orders.module';
 import { PublishersModule } from './publishers/publishers.module';
+import { Publisher } from './publishers/entities/publisher.entity';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { PublishersModule } from './publishers/publishers.module';
       username: 'root',
       password: '123456',
       database: 'web_ban_sach',
-      entities: [Role,Account,Category,Author],
+      entities: [Role,Account,Category,Author,Publisher],
       synchronize: true,
     }),
     EmployeesModule,
