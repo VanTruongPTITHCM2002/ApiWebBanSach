@@ -20,7 +20,21 @@ export class AuthController {
     @Body('username') username: string,
     @Body('password') password: string,
     @Body('repassword') repasssword: string,
+    @Body('firstname') firstname: string,
+    @Body('lastname') lastname: string,
+    @Body('email') email: string,
+    @Body('address') address: string,
+    @Body('phone') phone: string,
   ): Promise<ApiResponse<string>> {
-    return this.authService.signup(username, password, repasssword);
+    return this.authService.signup(
+      username,
+      password,
+      repasssword,
+      firstname,
+      lastname,
+      email,
+      address,
+      phone,
+    );
   }
 }

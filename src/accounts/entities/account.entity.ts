@@ -1,10 +1,12 @@
 import { Role } from 'src/roles/entities/role.entity';
+import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -12,6 +14,9 @@ import {
 export class Account {
   @PrimaryGeneratedColumn()
   accountId: number;
+
+  @OneToOne(() => User, (user) => user.accountId)
+  user: User;
 
   @Column({ length: 45 })
   username: string;

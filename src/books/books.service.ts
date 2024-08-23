@@ -159,11 +159,37 @@ export class BooksService {
       .build();
   }
 
-  update(id: number, updateBookDto: UpdateBookDto) {
-    return `This action updates a #${id} book`;
+  async update(id: number, updateBookDto: UpdateBookDto) {
+    try {
+      await this.bookRepository.update(id, updateBookDto);
+    } catch (error) {
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Không thể thực hiện cập nhật sách')
+        .data('')
+        .build();
+    }
+    return Builder<ApiResponse<any>>()
+      .statusCode(HttpStatus.OK)
+      .message('Cập nhật sách thành công')
+      .data('')
+      .build();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} book`;
+  async remove(id: number) {
+    try {
+      await this.bookRepository.delete(id);
+    } catch (error) {
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Không thể thực hiện xóa sách')
+        .data('')
+        .build();
+    }
+    return Builder<ApiResponse<any>>()
+      .statusCode(HttpStatus.OK)
+      .message('Xóa sách thành công')
+      .data('')
+      .build();
   }
 }

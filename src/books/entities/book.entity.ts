@@ -20,7 +20,9 @@ export class Book {
   @ManyToOne(() => Category, (category) => category.categoryId)
   categoryId: Category;
 
+  @Column()
   price: number;
 
+  @Column()
   stock: number;
 }

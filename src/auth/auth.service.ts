@@ -13,12 +13,14 @@ import * as bcrypt from 'bcrypt';
 import { AccountsService } from 'src/accounts/accounts.service';
 import { ApiResponse } from 'src/response/apires';
 import { Builder } from 'builder-pattern';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly accountService: AccountsService,
+    private readonly userService: UsersService,
     @InjectRepository(Account)
     private accountRepository: Repository<Account>,
   ) {}
@@ -27,6 +29,11 @@ export class AuthService {
     username: string,
     password: string,
     repassword: string,
+    firstname: string,
+    lastname: string,
+    email: string,
+    address: string,
+    phone: string,
   ): Promise<ApiResponse<string>> {
     const account = await this.accountRepository.findOne({
       where: { username: username },
@@ -53,6 +60,20 @@ export class AuthService {
       );
     }
 
+    const informAccount = this.userService.create({
+      firstname: firstname,
+      lastname: lastname,
+      email: email,
+      address: address,
+      phone: phone,
+      accountId: newAccount,
+    });
+    if (!informAccount) {
+      throw new HttpException(
+        `Không thể tạo thông tin cá nhân`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
     // return   new ApiResponse(
     //   HttpStatus.CREATED,
     //   `Tài khoản ${username} đã được tạo thành công`,
