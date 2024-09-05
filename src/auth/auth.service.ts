@@ -38,6 +38,7 @@ export class AuthService {
     const account = await this.accountRepository.findOne({
       where: { username: username },
     });
+
     if (account) {
       throw new HttpException(`${username} đã tồn tại`, HttpStatus.BAD_REQUEST);
     }
