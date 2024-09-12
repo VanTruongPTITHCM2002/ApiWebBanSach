@@ -1,9 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { Role } from './entities/role.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Builder } from 'builder-pattern';
+import { ApiResponse } from 'src/response/apires';
 
 @Injectable()
 export class RolesService {
@@ -16,8 +22,19 @@ export class RolesService {
     return this.roleRepository.save(createRoleDto);
   }
 
-  findAll() {
-    return this.roleRepository.find();
+  async findAll() {
+    let roles: Role[];
+    try {
+      roles = await this.roleRepository.find();
+    } catch (error) {
+      throw new InternalServerErrorException('Không thể lấy danh sách quyền');
+    }
+
+    return Builder<ApiResponse<any>>()
+      .statusCode(HttpStatus.OK)
+      .message('Danh sách quyền')
+      .data(roles)
+      .build();
   }
 
   findOne(roleId: number): Promise<Role | null> {

@@ -10,9 +10,9 @@ export class AuthController {
   async login(
     @Body('username') username: string,
     @Body('password') password: string,
-  ): Promise<{ accessToken: string }> {
+  ): Promise<ApiResponse<string>> {
     const accessToken = await this.authService.postLogin(username, password);
-    return { accessToken };
+    return accessToken;
   }
 
   @Post('signup')

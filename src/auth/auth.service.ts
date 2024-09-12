@@ -75,11 +75,7 @@ export class AuthService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    // return   new ApiResponse(
-    //   HttpStatus.CREATED,
-    //   `Tài khoản ${username} đã được tạo thành công`,
-    //   '',
-    // );
+
     return Builder<ApiResponse<any>>()
       .statusCode(HttpStatus.CREATED)
       .message(`Tài khoản ${username} đã được tạo thành công`)
@@ -87,7 +83,10 @@ export class AuthService {
       .build();
   }
 
-  async postLogin(username: string, password: string): Promise<string> {
+  async postLogin(
+    username: string,
+    password: string,
+  ): Promise<ApiResponse<string>> {
     const account = await this.accountRepository.findOne({
       where: { username: username },
       relations: ['roleId'],
@@ -99,7 +98,13 @@ export class AuthService {
     if (!isMatch) {
       throw new UnauthorizedException('Sai mật khẩu!');
     }
-    return this.generateToken(account);
+    const token = await this.generateToken(account);
+
+    return Builder<ApiResponse<any>>()
+      .statusCode(HttpStatus.OK)
+      .message('Đăng nhập thành công')
+      .data(token)
+      .build();
   }
 
   async generateToken(account: Account): Promise<string> {
