@@ -21,6 +21,12 @@ import { Publisher } from './publishers/entities/publisher.entity';
 import { Book } from './books/entities/book.entity';
 import { User } from './users/entities/user.entity';
 
+import { Order } from './orders/entities/order.entity';
+import { Cart } from './carts/entities/cart.entity';
+import { InvoiceModule } from './invoice/invoice.module';
+import { ReviewsModule } from './reviews/reviews.module';
+
+
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -31,7 +37,7 @@ import { User } from './users/entities/user.entity';
       password: '123456',
       database: 'web_ban_sach',
       entities: [Role,Account,Category,Author,Publisher
-        ,Book, User
+        ,Book, User,Order,Cart
       ], 
       synchronize: true,
     }),
@@ -46,6 +52,9 @@ import { User } from './users/entities/user.entity';
     CartsModule,
     OrdersModule,
     PublishersModule,
+    InvoiceModule,
+    ReviewsModule,
   ],
+
 })
 export class AppModule {}

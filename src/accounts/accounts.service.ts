@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Account } from './entities/account.entity';
@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/roles/entities/role.entity';
+import { ApiResponse } from 'src/response/apires';
+import { Builder } from 'builder-pattern';
 @Injectable()
 export class AccountsService {
   constructor(
@@ -38,15 +40,31 @@ export class AccountsService {
   }
 
   findAll() {
-    return `This action returns all accounts`;
+    return this.accountRepository.find();
   }
 
   findOne(id: number) {
     return `This action returns a #${id} account`;
   }
 
-  update(id: number, updateAccountDto: UpdateAccountDto) {
-    return this.accountRepository.update(id, updateAccountDto);
+  async update(
+    id: number,
+    updateAccountDto: UpdateAccountDto,
+  ): Promise<ApiResponse<any>> {
+    try {
+      await this.accountRepository.update(id, updateAccountDto);
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Cập nhật tài khoản thành công')
+        .data('')
+        .build();
+    } catch (err: any) {
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Cập nhật tài khoản thất bại')
+        .data('')
+        .build();
+    }
   }
 
   remove(id: number) {

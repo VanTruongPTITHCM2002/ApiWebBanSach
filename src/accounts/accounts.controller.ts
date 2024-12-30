@@ -6,10 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { RolesGuard } from 'src/common/guards/role.guard';
+import { Roles } from 'src/common/decorators/role.decorators';
+import { ApiResponse } from 'src/response/apires';
 
 @Controller('accounts')
 export class AccountsController {
@@ -21,6 +26,9 @@ export class AccountsController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @UseGuards(RolesGuard)
+  @Roles('ADMIN')
   findAll() {
     return this.accountsService.findAll();
   }
@@ -31,7 +39,10 @@ export class AccountsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateAccountDto: UpdateAccountDto,
+  ): Promise<ApiResponse<string>> {
     return this.accountsService.update(+id, updateAccountDto);
   }
 

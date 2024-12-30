@@ -1,10 +1,12 @@
 import { Length } from 'class-validator';
 import { Account } from 'src/accounts/entities/account.entity';
+import { Cart } from 'src/carts/entities/cart.entity';
+import { Order } from 'src/orders/entities/order.entity';
 import {
   Column,
   Entity,
-  IsNull,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -35,4 +37,10 @@ export class User {
   @OneToOne(() => Account, (account) => account.accountId, { cascade: true })
   @JoinColumn({ name: 'accountId' })
   accountId: Account;
+
+  @OneToMany(() => Order, (order) => order.orderId)
+  orderId: Order[];
+
+  @OneToMany(() => Cart, (cart) => cart.cartId)
+  cartId: Cart[];
 }
