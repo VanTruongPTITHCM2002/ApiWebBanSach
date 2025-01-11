@@ -25,6 +25,7 @@ import { Order } from './orders/entities/order.entity';
 import { Cart } from './carts/entities/cart.entity';
 import { InvoiceModule } from './invoice/invoice.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { CartitemsModule } from './cartitems/cartitems.module';
 
 
 @Module({
@@ -54,6 +55,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     PublishersModule,
     InvoiceModule,
     ReviewsModule,
+    CartitemsModule,
   ],
 
 })
