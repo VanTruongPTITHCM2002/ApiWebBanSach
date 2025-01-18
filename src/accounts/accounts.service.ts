@@ -1,4 +1,9 @@
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Account } from './entities/account.entity';
@@ -8,6 +13,8 @@ import * as bcrypt from 'bcrypt';
 import { Role } from 'src/roles/entities/role.entity';
 import { ApiResponse } from 'src/response/apires';
 import { Builder } from 'builder-pattern';
+import { AccountResponse } from './dto/accountResponse';
+import { convertStatus } from 'src/utils/convertStatusAccount';
 @Injectable()
 export class AccountsService {
   constructor(
@@ -39,20 +46,81 @@ export class AccountsService {
     return await this.accountRepository.save(account);
   }
 
-  findAll() {
-    return this.accountRepository.find();
+  async findAll() {
+    try {
+      const accounts = await this.accountRepository.find();
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Cập nhật tài khoản thành công')
+        .data(
+          accounts.map(
+            (account) =>
+              new AccountResponse(
+                account.username,
+                convertStatus(account.status),
+                account.createdAt.toLocaleString(),
+              ),
+          ),
+        )
+        .build();
+    } catch (error: any) {
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Lỗi từ cơ sở dữ liệu..')
+        .data('')
+        .build();
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} account`;
+  async findOne(id: string) {
+    try {
+      const account = await this.accountRepository.findOne({
+        where: { username: id },
+      });
+      if (account === null) {
+        throw new HttpException(
+          {
+            statusCode: HttpStatus.NOT_FOUND,
+            message: `Không tìm thấy tài khoản ${id}`,
+            error: 'Not Found',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const response = new AccountResponse(
+        account.username,
+        convertStatus(account.status),
+        account.createdAt.toLocaleString(),
+      );
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Thông tin tài khoản ' + id)
+        .data(response)
+        .build();
+    } catch (err: any) {
+      if (err instanceof HttpException) {
+        // Nếu lỗi là HttpException, trả về đúng status và message
+        return Builder<ApiResponse<any>>()
+          .statusCode(err.getStatus())
+          .message(err.message)
+          .data('')
+          .build();
+      } else {
+        return Builder<ApiResponse<any>>()
+          .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+          .message('Lỗi từ cơ sở dữ liệu..')
+          .data('')
+          .build();
+      }
+    }
   }
 
   async update(
-    id: number,
+    username: string,
     updateAccountDto: UpdateAccountDto,
   ): Promise<ApiResponse<any>> {
     try {
-      await this.accountRepository.update(id, updateAccountDto);
+      await this.accountRepository.update(username, updateAccountDto);
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.OK)
         .message('Cập nhật tài khoản thành công')

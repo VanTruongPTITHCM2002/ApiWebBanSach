@@ -35,7 +35,7 @@ export class AccountsController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.accountsService.findOne(+id);
+    return this.accountsService.findOne(id);
   }
 
   @Patch(':id')
@@ -43,10 +43,12 @@ export class AccountsController {
     @Param('id') id: string,
     @Body() updateAccountDto: UpdateAccountDto,
   ): Promise<ApiResponse<string>> {
-    return this.accountsService.update(+id, updateAccountDto);
+    return this.accountsService.update(id, updateAccountDto);
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   remove(@Param('id') id: string) {
     return this.accountsService.remove(+id);
   }

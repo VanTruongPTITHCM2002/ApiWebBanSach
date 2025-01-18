@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -6,6 +6,7 @@ import { Author } from './entities/author.entity';
 import { Repository } from 'typeorm';
 import { Builder } from 'builder-pattern';
 import { ApiResponse } from 'src/response/apires';
+import { AuthorResponse } from './dto/authorResponse';
 
 @Injectable()
 export class AuthorsService {
@@ -14,66 +15,81 @@ export class AuthorsService {
     private readonly authorRepository: Repository<Author>,
   ) {}
   async create(createAuthorDto: CreateAuthorDto) {
-    let author: Author = null;
     try {
-      author = await this.authorRepository.create(createAuthorDto);
-    } catch (error) {
+      const authorName = await this.authorRepository.findOne({
+        where: {
+          firstname: createAuthorDto.firstname,
+          lastname: createAuthorDto.lastname,
+        },
+      });
+      if (authorName) {
+        throw new HttpException('Tác giả đã tồn tại', HttpStatus.BAD_REQUEST);
+      }
+      const author = await this.authorRepository.save(createAuthorDto);
       return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thêm tác giả')
+        .statusCode(HttpStatus.CREATED)
+        .message('Thêm tác giả thành công')
         .data(author)
         .build();
+    } catch (error) {
+      if (error instanceof HttpException) {
+        return Builder<ApiResponse<any>>()
+          .statusCode(error.getStatus())
+          .message(error.message)
+          .build();
+      }
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Lỗi từ cơ sở dữ liệu...')
+        .data('')
+        .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.CREATED)
-      .message('Thêm tác giả thành công')
-      .data(author)
-      .build();
   }
 
   async findAll() {
-    let authors = [];
     try {
-      authors = await this.authorRepository.find();
+      const authors = await this.authorRepository.find();
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Danh sách tác giả')
+        .data(
+          authors.map(
+            (author) => new AuthorResponse(author.firstname, author.lastname),
+          ),
+        )
+        .build();
     } catch (error) {
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
         .message('Không thể lấy danh sách tác giả')
-        .data(authors)
+        .data('')
         .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Danh sách tác giả')
-      .data(authors)
-      .build();
   }
 
-  async findOne(id: number) {
-    let author: Author = null;
+  async findOne(id: string) {
     try {
-      author = await this.authorRepository.findOne({
-        where: { authorId: id },
-      });
-      if (!author) {
+      const author: Author[] = await this.authorRepository
+        .createQueryBuilder('author')
+        .where('author.firstName like :name', { name: '%' + id + '%' })
+        .getMany();
+      if (author.length === 0) {
         return Builder<ApiResponse<any>>()
           .statusCode(HttpStatus.NOT_FOUND)
           .message('Không tìm thấy tác giả này')
-          .data(author)
           .build();
       }
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Tìm thành công tác giả')
+        .data(author)
+        .build();
     } catch (error) {
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
         .message('Không thể tìm kiếm tác giả')
-        .data(author)
         .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Tìm thành công tác giả')
-      .data(author)
-      .build();
   }
 
   async update(id: number, updateAuthorDto: UpdateAuthorDto) {

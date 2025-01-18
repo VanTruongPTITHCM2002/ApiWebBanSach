@@ -24,6 +24,9 @@ export class Account {
   @Column({ length: 255 })
   password: string;
 
+  @Column()
+  status: boolean;
+
   @ManyToOne(() => Role, (role) => role.accounts)
   @JoinColumn({ name: 'roleId' })
   roleId: Role;
