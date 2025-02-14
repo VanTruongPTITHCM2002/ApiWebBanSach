@@ -36,7 +36,7 @@ export class User {
 
   @OneToOne(() => Account, (account) => account.accountId, { cascade: true })
   @JoinColumn({ name: 'accountId' })
-  accountId: Account;
+  accountFK: Account;
 
   @OneToMany(() => Order, (order) => order.orderId)
   orderId: Order[];

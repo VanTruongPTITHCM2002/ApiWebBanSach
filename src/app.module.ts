@@ -26,6 +26,7 @@ import { Cart } from './carts/entities/cart.entity';
 import { InvoiceModule } from './invoice/invoice.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CartitemsModule } from './cartitems/cartitems.module';
+import { Cartitem } from './cartitems/entities/cartitem.entity';
 
 
 @Module({
@@ -38,7 +39,7 @@ import { CartitemsModule } from './cartitems/cartitems.module';
       password: '123456',
       database: 'web_ban_sach',
       entities: [Role,Account,Category,Author,Publisher
-        ,Book, User,Order,Cart
+        ,Book, User,Order,Cart, Cartitem
       ], 
       synchronize: true,
     }),

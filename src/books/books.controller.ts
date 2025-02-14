@@ -7,16 +7,22 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { RolesGuard } from 'src/common/guards/role.guard';
+import { Roles } from 'src/common/decorators/role.decorators';
 
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  @Roles('ADMIN')
   create(@Body() createBookDto: CreateBookDto) {
     return this.booksService.create(createBookDto);
   }
@@ -38,6 +44,6 @@ export class BooksController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.booksService.remove(+id);
+    return this.booksService.remove(id);
   }
 }

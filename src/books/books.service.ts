@@ -45,15 +45,7 @@ export class BooksService {
           .data('')
           .build();
       }
-    } catch (error) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thực hiện tìm tác giả')
-        .data('')
-        .build();
-    }
 
-    try {
       publisher = await this.publisherRepository.findOne({
         where: { publisherName: createBookDto.publisherName.toString() },
       });
@@ -65,16 +57,7 @@ export class BooksService {
           .data('')
           .build();
       }
-    } catch (error) {
-      console.error('Error finding publisher:', error);
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thực hiện tìm nhà xuất bản')
-        .data('')
-        .build();
-    }
 
-    try {
       category = await this.categoryRepository.findOne({
         where: { categoryName: createBookDto.categoryName.toString() },
       });
@@ -86,15 +69,7 @@ export class BooksService {
           .data('')
           .build();
       }
-    } catch (error) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thực hiện tìm danh mục')
-        .data('')
-        .build();
-    }
 
-    try {
       const book = {
         title: createBookDto.title,
         authorId: author,
@@ -104,18 +79,18 @@ export class BooksService {
         stock: createBookDto.stock,
       };
       await this.bookRepository.save(book);
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.CREATED)
+        .message('Thêm sách thành công')
+        .data('')
+        .build();
     } catch (error) {
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thực hiện thêm sách')
+        .message('Xảy ra lỗi trong quá trình thêm sách')
         .data('')
         .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.CREATED)
-      .message('Thêm sách thành công')
-      .data('')
-      .build();
   }
 
   async findAll() {
@@ -124,6 +99,11 @@ export class BooksService {
       books = await this.bookRepository.find({
         relations: ['authorId', 'publisherId', 'categoryId'],
       });
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Danh sách của sách')
+        .data(books)
+        .build();
     } catch (error) {
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -131,65 +111,56 @@ export class BooksService {
         .data('')
         .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Danh sách của sách')
-      .data(books)
-      .build();
   }
 
   async findOne(id: number) {
-    let book: Book = null;
     try {
-      book = await this.bookRepository.findOne({
+      const book = await this.bookRepository.findOne({
         where: { bookid: id },
         relations: ['authorId', 'publisherId', 'categoryId'],
       });
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Tìm sách thành công')
+        .data(book)
+        .build();
     } catch (error) {
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
         .message('Không thể hiện danh sách của sách')
-        .data(book)
         .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Tìm sách thành công')
-      .data(book)
-      .build();
   }
 
   async update(id: number, updateBookDto: UpdateBookDto) {
     try {
       await this.bookRepository.update(id, updateBookDto);
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Cập nhật sách thành công')
+        .data('')
+        .build();
     } catch (error) {
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
         .message('Không thể thực hiện cập nhật sách')
-        .data('')
         .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Cập nhật sách thành công')
-      .data('')
-      .build();
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     try {
       await this.bookRepository.delete(id);
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Xóa sách thành công')
+        .data('')
+        .build();
     } catch (error) {
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
         .message('Không thể thực hiện xóa sách')
-        .data('')
         .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Xóa sách thành công')
-      .data('')
-      .build();
   }
 }

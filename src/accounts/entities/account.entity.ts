@@ -15,7 +15,7 @@ export class Account {
   @PrimaryGeneratedColumn()
   accountId: number;
 
-  @OneToOne(() => User, (user) => user.accountId)
+  @OneToOne(() => User, (user) => user.accountFK)
   user: User;
 
   @Column({ length: 45 })

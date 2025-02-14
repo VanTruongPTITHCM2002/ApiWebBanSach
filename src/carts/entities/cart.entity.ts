@@ -1,8 +1,8 @@
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
-  CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -13,9 +13,10 @@ export class Cart {
   cartId: number;
 
   @ManyToOne(() => User, (user) => user.usersId)
-  userId: User;
+  @JoinColumn({ name: 'usersId' })
+  usersId: User;
 
-  @CreateDateColumn()
+  @Column({ type: 'datetime' })
   createAt: Date;
 
   @Column()
