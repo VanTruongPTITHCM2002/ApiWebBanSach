@@ -8,7 +8,6 @@ import { Cart } from './entities/cart.entity';
 import { Builder } from 'builder-pattern';
 import { User } from 'src/users/entities/user.entity';
 import { Account } from 'src/accounts/entities/account.entity';
-import { parse } from 'date-fns';
 
 @Injectable()
 export class CartsService {
@@ -38,7 +37,6 @@ export class CartsService {
           'Không tìm thấy user tương thích với tài khoản',
         );
       }
-      console.log(createCartDto.createAt);
       const cart = await this.cartRepository.create({
         usersId: user,
         createAt: createCartDto.createAt,

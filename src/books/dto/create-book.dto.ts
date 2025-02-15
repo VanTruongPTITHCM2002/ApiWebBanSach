@@ -1,31 +1,27 @@
-import { IsAlphanumeric, IsEmpty, IsNumber, Length } from 'class-validator';
+import { IsNotEmpty, IsNumber, Length } from 'class-validator';
 
 export class CreateBookDto {
-  @IsAlphanumeric()
-  @IsEmpty()
+  @IsNotEmpty()
   @Length(4, 45)
   title: string;
 
-  @IsAlphanumeric()
-  @IsEmpty()
+  @IsNotEmpty()
   @Length(4, 45)
   authorName: string | number;
 
-  @IsAlphanumeric()
-  @IsEmpty()
+  @IsNotEmpty()
   @Length(4, 45)
   publisherName: string | number;
 
-  @IsAlphanumeric()
-  @IsEmpty()
+  @IsNotEmpty()
   @Length(4, 45)
   categoryName: string | number;
 
   @IsNumber()
-  @IsEmpty()
+  @IsNotEmpty()
   price: number;
 
   @IsNumber()
-  @IsEmpty()
+  @IsNotEmpty()
   stock: number;
 }

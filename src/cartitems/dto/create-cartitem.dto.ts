@@ -1,13 +1,22 @@
-import { IsEmpty, IsNumber, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from 'class-validator';
+import { CreateCartDto } from 'src/carts/dto/create-cart.dto';
 
 export class CreateCartitemDto {
-  @IsNumber()
-  @IsEmpty()
-  cartId: number;
+  @IsNotEmpty()
+  @ValidateNested() // Đảm bảo DTO lồng nhau được validate
+  @Type(() => CreateCartDto) // Cần có @Type() để transform đúng
+  cartDto: CreateCartDto;
+
   @IsString()
-  @IsEmpty()
+  @IsNotEmpty()
   bookName: string;
-  @IsEmpty()
+  @IsNotEmpty()
   @IsNumber()
   quantity: number;
 }

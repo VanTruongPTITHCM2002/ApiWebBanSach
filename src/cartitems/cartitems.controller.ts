@@ -6,28 +6,36 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { CartitemsService } from './cartitems.service';
 import { CreateCartitemDto } from './dto/create-cartitem.dto';
 import { UpdateCartitemDto } from './dto/update-cartitem.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
+import { RolesGuard } from 'src/common/guards/role.guard';
+import { Roles } from 'src/common/decorators/role.decorators';
 
 @Controller('cartitems')
 export class CartitemsController {
   constructor(private readonly cartitemsService: CartitemsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() createCartitemDto: CreateCartitemDto) {
     return this.cartitemsService.create(createCartitemDto);
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   findAll() {
     return this.cartitemsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.cartitemsService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param('id') username: string) {
+    return this.cartitemsService.findOne(username);
   }
 
   @Patch(':id')

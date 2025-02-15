@@ -1,16 +1,24 @@
 import { Book } from 'src/books/entities/book.entity';
 import { Cart } from 'src/carts/entities/cart.entity';
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity('cartitems')
 export class Cartitem {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   cartitemId: number;
 
-  @ManyToOne(() => Cart, (cart) => cart.cartId)
+  @ManyToOne(() => Cart, (cart) => cart.cartItemId)
+  @JoinColumn({ name: 'cartId' })
   cartId: Cart;
 
   @ManyToOne(() => Book, (book) => book.bookid)
+  @JoinColumn({ name: 'bookId' })
   bookId: Book;
 
   @Column()
