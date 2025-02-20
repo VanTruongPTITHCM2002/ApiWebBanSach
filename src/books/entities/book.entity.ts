@@ -1,11 +1,13 @@
 import { Author } from 'src/authors/entities/author.entity';
 import { Category } from 'src/categories/entities/category.entity';
+import { Orderdetail } from 'src/orderdetail/entities/orderdetail.entity';
 import { Publisher } from 'src/publishers/entities/publisher.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -28,6 +30,9 @@ export class Book {
   @ManyToOne(() => Category, (category) => category.categoryId)
   @JoinColumn({ name: 'categoryId' })
   categoryId: Category;
+
+  @OneToMany(() => Orderdetail, (orderDetail) => orderDetail.bookId)
+  orderdetails: Orderdetail[];
 
   @Column()
   price: number;
