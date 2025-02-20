@@ -15,7 +15,7 @@ export class EmployeesService {
     }
 
     findOne(id: number): Promise<Employee> {
-        return this.employeeRepository.findOneBy({ id });
+        return this.employeeRepository.findOneBy({ idemployee: id });
     }
 
     create(employee: Employee): Promise<Employee> {

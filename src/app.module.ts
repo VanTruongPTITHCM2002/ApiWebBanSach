@@ -27,6 +27,11 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { CartitemsModule } from './cartitems/cartitems.module';
 import { Cartitem } from './cartitems/entities/cartitem.entity';
+import { OrderdetailModule } from './orderdetail/orderdetail.module';
+import { InvoiceitemModule } from './invoiceitem/invoiceitem.module';
+import { Orderdetail } from './orderdetail/entities/orderdetail.entity';
+import { Invoice } from './invoice/entities/invoice.entity';
+import { Invoiceitem } from './invoiceitem/entities/invoiceitem.entity';
 
 
 @Module({
@@ -39,7 +44,7 @@ import { Cartitem } from './cartitems/entities/cartitem.entity';
       password: '123456',
       database: 'web_ban_sach',
       entities: [Role,Account,Category,Author,Publisher
-        ,Book, User,Order,Cart, Cartitem
+        ,Book, User,Order,Cart, Cartitem,Orderdetail, Invoice, Invoiceitem
       ], 
       synchronize: true,
     }),
@@ -57,6 +62,8 @@ import { Cartitem } from './cartitems/entities/cartitem.entity';
     InvoiceModule,
     ReviewsModule,
     CartitemsModule,
+    OrderdetailModule,
+    InvoiceitemModule,
   ],
 
 })

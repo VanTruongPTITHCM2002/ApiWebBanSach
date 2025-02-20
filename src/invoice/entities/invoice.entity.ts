@@ -1,9 +1,11 @@
+import { Invoiceitem } from 'src/invoiceitem/entities/invoiceitem.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
   Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -13,8 +15,11 @@ export class Invoice {
   invoiceId: number;
 
   @ManyToOne(() => User, (user) => user.usersId)
-  @JoinColumn()
+  @JoinColumn({ name: 'userId' })
   userId: User;
+
+  @OneToMany(() => Invoiceitem, (invoiceItem) => invoiceItem.invoiceId)
+  invoiceItems: Invoiceitem[];
 
   @Column()
   invoiceDate: Date;

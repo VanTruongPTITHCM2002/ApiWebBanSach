@@ -38,8 +38,8 @@ export class User {
   @JoinColumn({ name: 'accountId' })
   accountFK: Account;
 
-  @OneToMany(() => Order, (order) => order.orderId)
-  orderId: Order[];
+  @OneToMany(() => Order, (order) => order.userId)
+  orders: Order[];
 
   @OneToMany(() => Cart, (cart) => cart.usersId)
   carts: Cart[];

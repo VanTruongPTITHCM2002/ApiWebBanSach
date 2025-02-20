@@ -1,22 +1,27 @@
-/* eslint-disable prettier/prettier */
-import { User } from "src/users/entities/user.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { User } from 'src/users/entities/user.entity';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
-@Entity("orders")
+@Entity('orders')
 export class Order {
-    @PrimaryGeneratedColumn()
-    orderId: number;
+  @PrimaryGeneratedColumn()
+  orderId: number;
 
-    @ManyToOne(()=>User,(user)=>user.usersId)
-    userId: User;
+  @ManyToOne(() => User, (user) => user.orders)
+  @JoinColumn({ name: 'userId' })
+  userId: User;
 
-    @Column()
-    orderDate: Date;
+  @Column()
+  orderDate: Date;
 
-    @Column()
-    totalAmount: number;
+  @Column()
+  totalAmount: number;
 
-    @Column()
-    status:number
-
+  @Column()
+  status: number;
 }
