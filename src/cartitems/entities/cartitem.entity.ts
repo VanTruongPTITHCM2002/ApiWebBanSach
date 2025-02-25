@@ -15,7 +15,7 @@ export class Cartitem {
 
   @ManyToOne(() => Cart, (cart) => cart.cartItemId)
   @JoinColumn({ name: 'cartId' })
-  cartId: Cart;
+  carts: Cart;
 
   @ManyToOne(() => Book, (book) => book.bookid)
   @JoinColumn({ name: 'bookId' })

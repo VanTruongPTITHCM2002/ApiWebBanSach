@@ -18,7 +18,9 @@ export class Invoice {
   @JoinColumn({ name: 'userId' })
   userId: User;
 
-  @OneToMany(() => Invoiceitem, (invoiceItem) => invoiceItem.invoiceId)
+  @OneToMany(() => Invoiceitem, (invoiceItem) => invoiceItem.invoice, {
+    cascade: true,
+  })
   invoiceItems: Invoiceitem[];
 
   @Column()

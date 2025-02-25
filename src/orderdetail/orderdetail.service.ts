@@ -68,11 +68,12 @@ export class OrderdetailService {
       const newOder = await this.orderRepository.save(order);
 
       const cartItems = await this.cartItemRepository.find({
-        where: { cartId: { cartId: createOrderdetailDto.cartId } },
+        where: { carts: { cartId: createOrderdetailDto.cartId } },
+        relations: ['bookId'],
       });
 
       const orderDetail = cartItems.map((c) => ({
-        bookId: c.bookId,
+        books: c.bookId,
         price: c.price,
         quantity: c.quantity,
         orderId: newOder,
@@ -82,20 +83,96 @@ export class OrderdetailService {
         .statusCode(HttpStatus.CREATED)
         .message('Tạo chi tiết đơn hàng thành công với mã ' + newOder.orderId)
         .build();
-    } catch (error: any) {}
-    return 'This action adds a new orderdetail';
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return Builder<ApiResponse<any>>()
+          .statusCode(HttpStatus.NOT_FOUND)
+          .message(error.message)
+          .build();
+      }
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Có lỗi xảy ra')
+        .build();
+    }
   }
 
-  findAll() {
-    return `This action returns all orderdetail`;
+  async findAll() {
+    try {
+      const orderDetail = await this.orderDetailRepository.find();
+      return Builder<ApiResponse<Orderdetail[]>>()
+        .statusCode(HttpStatus.OK)
+        .data(orderDetail)
+        .build();
+    } catch (error: any) {
+      return Builder<ApiResponse<Orderdetail[]>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Có lỗi xảy ra')
+        .build();
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} orderdetail`;
+  async findOne(userId: number) {
+    try {
+      const orderDetail = await this.orderDetailRepository.find({
+        where: { orderId: { orderId: userId } },
+      });
+      return Builder<ApiResponse<Orderdetail[]>>()
+        .statusCode(HttpStatus.OK)
+        .data(orderDetail)
+        .build();
+    } catch (error: any) {
+      return Builder<ApiResponse<Orderdetail[]>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Có lỗi xảy ra')
+        .build();
+    }
   }
 
-  update(id: number, updateOrderdetailDto: UpdateOrderdetailDto) {
-    return `This action updates a #${id} orderdetail`;
+  async update(id: number, updateOrderdetailDto: UpdateOrderdetailDto) {
+    try {
+      const [order, book] = await Promise.all([
+        this.orderRepository.findOne({
+          where: { orderId: id },
+          relations: ['orderId'],
+        }),
+        this.bookRepository.findOne({
+          where: { title: updateOrderdetailDto.bookName },
+        }),
+      ]);
+      if (!book) {
+        throw new NotFoundException(
+          'Không tìm thấy sách ' + updateOrderdetailDto.bookName,
+        );
+      }
+
+      if (!order) {
+        throw new NotFoundException('Không tìm thấy đơn hàng này');
+      }
+      const orderDetail = await this.orderDetailRepository.findOne({
+        where: { orderId: { orderId: id }, books: { bookid: book.bookid } },
+      });
+      if (!orderDetail) {
+        throw new NotFoundException('Không tìm thấy sách trong đơn hàng này');
+      }
+      orderDetail.quantity = updateOrderdetailDto.quantity;
+      await this.orderDetailRepository.save(orderDetail);
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .message('Cập nhật đơn hàng thành công')
+        .build();
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return Builder<ApiResponse<any>>()
+          .statusCode(HttpStatus.NOT_FOUND)
+          .message(error.message)
+          .build();
+      }
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message('Có lỗi xảy ra')
+        .build();
+    }
   }
 
   remove(id: number) {

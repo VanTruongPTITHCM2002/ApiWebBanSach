@@ -31,7 +31,7 @@ export class Book {
   @JoinColumn({ name: 'categoryId' })
   categoryId: Category;
 
-  @OneToMany(() => Orderdetail, (orderDetail) => orderDetail.bookId)
+  @OneToMany(() => Orderdetail, (orderDetail) => orderDetail.books)
   orderdetails: Orderdetail[];
 
   @Column()

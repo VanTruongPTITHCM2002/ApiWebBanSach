@@ -21,7 +21,7 @@ export class Cart {
   @Column({ type: 'datetime' })
   createAt: Date;
 
-  @OneToMany(() => Cartitem, (cartItem) => cartItem.cartId)
+  @OneToMany(() => Cartitem, (cartItem) => cartItem.carts)
   cartItemId: Cartitem[];
 
   @Column()
