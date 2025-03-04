@@ -4,7 +4,6 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Account } from 'src/accounts/entities/account.entity';
 import { Builder } from 'builder-pattern';
 import { ApiResponse } from 'src/response/apires';
 

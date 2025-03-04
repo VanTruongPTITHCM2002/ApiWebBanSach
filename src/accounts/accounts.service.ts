@@ -40,6 +40,7 @@ export class AccountsService {
       ...rest,
       password: hashedPassword,
       roleId: role,
+      status: true,
     });
 
     // Lưu tài khoản vào cơ sở dữ liệu

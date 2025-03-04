@@ -75,11 +75,43 @@ export class InvoiceitemService {
   }
 
   findAll() {
+    try {
+    } catch (error: any) {
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message(error.message)
+        .build();
+    }
     return `This action returns all invoiceitem`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} invoiceitem`;
+  async findOne(id: number) {
+    try {
+      const invoice = await this.invoiceRepository.findOne({
+        where: { invoiceId: id },
+      });
+      if (!invoice) {
+        throw new NotFoundException('Không tìm thấy hóa đơn này');
+      }
+      const invoiceItems = await this.invoiceItemRepository.find({
+        where: { invoice: { invoiceId: invoice.invoiceId } },
+      });
+
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.OK)
+        .data(invoiceItems)
+        .build();
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return Builder<ApiResponse<any>>()
+          .statusCode(HttpStatus.NOT_FOUND)
+          .message(error.message).build;
+      }
+      return Builder<ApiResponse<any>>()
+        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+        .message(error.message)
+        .build();
+    }
   }
 
   update(id: number, updateInvoiceitemDto: UpdateInvoiceitemDto) {

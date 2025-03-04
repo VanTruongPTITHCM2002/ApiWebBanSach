@@ -75,7 +75,6 @@ export class AuthService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
     return Builder<ApiResponse<any>>()
       .statusCode(HttpStatus.CREATED)
       .message(`Tài khoản ${username} đã được tạo thành công`)
