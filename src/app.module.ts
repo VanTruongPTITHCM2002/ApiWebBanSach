@@ -32,21 +32,26 @@ import { InvoiceitemModule } from './invoiceitem/invoiceitem.module';
 import { Orderdetail } from './orderdetail/entities/orderdetail.entity';
 import { Invoice } from './invoice/entities/invoice.entity';
 import { Invoiceitem } from './invoiceitem/entities/invoiceitem.entity';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: '123456',
-      database: 'web_ban_sach',
-      entities: [Role,Account,Category,Author,Publisher
-        ,Book, User,Order,Cart, Cartitem,Orderdetail, Invoice, Invoiceitem
-      ], 
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get('DB_HOST'),
+        port: +configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_DATABASE'),
+        entities: [Role,Account,Category,Author,Publisher
+          ,Book, User,Order,Cart, Cartitem,Orderdetail, Invoice, Invoiceitem
+        ],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
     EmployeesModule,
     UsersModule,
@@ -64,6 +69,7 @@ import { Invoiceitem } from './invoiceitem/entities/invoiceitem.entity';
     CartitemsModule,
     OrderdetailModule,
     InvoiceitemModule,
+    ConfigModule.forRoot(),
   ],
 
 })
