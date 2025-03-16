@@ -15,12 +15,36 @@ import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
 import { ApiResponse } from 'src/response/apires';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller('accounts')
+@ApiTags('accounts')
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
   @Post()
+  @ApiCreatedResponse({ description: 'Tạo tài khoản' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        username: {
+          type: 'string',
+          description: 'Tên đăng nhập',
+        },
+        password: {
+          type: 'string',
+          description: 'Mật khẩu',
+        },
+      },
+    },
+  })
   create(@Body() createAccountDto: CreateAccountDto) {
     return this.accountsService.create(createAccountDto);
   }
@@ -34,6 +58,12 @@ export class AccountsController {
   }
 
   @Get(':id')
+  @ApiOkResponse({ description: 'Lấy thông tin tài khoản' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'ID của tài khoản',
+  })
   findOne(@Param('id') id: string) {
     return this.accountsService.findOne(id);
   }

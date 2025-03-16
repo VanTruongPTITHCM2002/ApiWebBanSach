@@ -1,7 +1,12 @@
 import { Controller, Post, Body } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiResponse } from 'src/response/apires';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { ApiRes } from 'src/response/response.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -28,7 +33,7 @@ export class AuthController {
   async login(
     @Body('username') username: string,
     @Body('password') password: string,
-  ): Promise<ApiResponse<string>> {
+  ): Promise<ApiRes<string>> {
     const accessToken = await this.authService.postLogin(username, password);
     return accessToken;
   }
@@ -83,7 +88,7 @@ export class AuthController {
     @Body('email') email: string,
     @Body('address') address: string,
     @Body('phone') phone: string,
-  ): Promise<ApiResponse<string>> {
+  ): Promise<ApiRes<string>> {
     return this.authService.signup(
       username,
       password,

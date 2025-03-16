@@ -11,9 +11,8 @@ import { Account } from 'src/accounts/entities/account.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { AccountsService } from 'src/accounts/accounts.service';
-import { ApiResponse } from 'src/response/apires';
-import { Builder } from 'builder-pattern';
 import { UsersService } from 'src/users/users.service';
+import { ApiRes } from 'src/response/response.dto';
 
 @Injectable()
 export class AuthService {
@@ -34,7 +33,7 @@ export class AuthService {
     email: string,
     address: string,
     phone: string,
-  ): Promise<ApiResponse<string>> {
+  ): Promise<ApiRes<string>> {
     const account = await this.accountRepository.findOne({
       where: { username: username },
     });
@@ -75,17 +74,10 @@ export class AuthService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.CREATED)
-      .message(`Tài khoản ${username} đã được tạo thành công`)
-      .data(null)
-      .build();
+    return ApiRes.created(`Tài khoản ${username} đã được tạo thành công`, null);
   }
 
-  async postLogin(
-    username: string,
-    password: string,
-  ): Promise<ApiResponse<string>> {
+  async postLogin(username: string, password: string): Promise<ApiRes<string>> {
     const account = await this.accountRepository.findOne({
       where: { username: username },
       relations: ['roleId'],
@@ -98,12 +90,7 @@ export class AuthService {
       throw new UnauthorizedException('Sai mật khẩu!');
     }
     const token = await this.generateToken(account);
-
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Đăng nhập thành công')
-      .data(token)
-      .build();
+    return ApiRes.success('Đăng nhập thành công', token);
   }
 
   async generateToken(account: Account): Promise<string> {
