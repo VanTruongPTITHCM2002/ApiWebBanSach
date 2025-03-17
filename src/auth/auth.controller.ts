@@ -7,6 +7,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ApiRes } from 'src/response/response.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 @ApiTags('auth')
@@ -15,26 +16,11 @@ export class AuthController {
 
   @Post('login')
   @ApiOkResponse({ description: 'Đăng nhập tài khoản' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        username: {
-          type: 'string',
-          description: 'Tên đăng nhập',
-        },
-        password: {
-          type: 'string',
-          description: 'Mật khẩu',
-        },
-      },
-    },
-  })
-  async login(
-    @Body('username') username: string,
-    @Body('password') password: string,
-  ): Promise<ApiRes<string>> {
-    const accessToken = await this.authService.postLogin(username, password);
+  async login(@Body() loginDto: LoginDto): Promise<ApiRes<string>> {
+    const accessToken = await this.authService.postLogin(
+      loginDto.username,
+      loginDto.password,
+    );
     return accessToken;
   }
 
