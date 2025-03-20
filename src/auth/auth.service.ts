@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { AccountsService } from 'src/accounts/accounts.service';
 import { UsersService } from 'src/users/users.service';
 import { ApiRes } from 'src/response/response.dto';
+import { SignUpDto } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
@@ -24,33 +25,27 @@ export class AuthService {
     private accountRepository: Repository<Account>,
   ) {}
 
-  async signup(
-    username: string,
-    password: string,
-    repassword: string,
-    firstname: string,
-    lastname: string,
-    email: string,
-    address: string,
-    phone: string,
-  ): Promise<ApiRes<string>> {
+  async signup(signUpDto: SignUpDto): Promise<ApiRes<string>> {
     const account = await this.accountRepository.findOne({
-      where: { username: username },
+      where: { username: signUpDto.username },
     });
 
     if (account) {
-      throw new HttpException(`${username} đã tồn tại`, HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        `${signUpDto.username} đã tồn tại`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
-    if (password !== repassword) {
+    if (signUpDto.password !== signUpDto.repassword) {
       throw new HttpException(
         `Mật khẩu không trùng khớp`,
         HttpStatus.BAD_REQUEST,
       );
     }
     const newAccount = await this.accountService.create({
-      username: username,
-      password: password,
+      username: signUpDto.username,
+      password: signUpDto.password,
     });
 
     if (!newAccount) {
@@ -61,11 +56,11 @@ export class AuthService {
     }
 
     const informAccount = this.userService.create({
-      firstname: firstname,
-      lastname: lastname,
-      email: email,
-      address: address,
-      phone: phone,
+      firstname: signUpDto.firstname,
+      lastname: signUpDto.lastname,
+      email: signUpDto.email,
+      address: signUpDto.address,
+      phone: signUpDto.phone,
       accountId: newAccount,
     });
     if (!informAccount) {
@@ -74,7 +69,10 @@ export class AuthService {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    return ApiRes.created(`Tài khoản ${username} đã được tạo thành công`, null);
+    return ApiRes.created(
+      `Tài khoản ${signUpDto.username} đã được tạo thành công`,
+      null,
+    );
   }
 
   async postLogin(username: string, password: string): Promise<ApiRes<string>> {
