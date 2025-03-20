@@ -23,7 +23,7 @@ export class RolesGuard implements CanActivate {
     // Lấy thông tin user từ request (gắn bởi JwtAuthGuard)
     const request = context.switchToHttp().getRequest();
     const user = request.user;
-  
+
     if (!user || user.role !== requiredRole) {
       throw new ForbiddenException('Access denied for this role');
     }

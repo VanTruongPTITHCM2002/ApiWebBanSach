@@ -26,7 +26,7 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       // Xác thực token
-      const payload = jwt.verify(token, 'vantruong123456789');
+      const payload = jwt.verify(token, process.env.SECRET_KEY);
       request.user = payload;
       return true;
     } catch (err) {

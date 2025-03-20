@@ -10,12 +10,18 @@ import { AccountsService } from 'src/accounts/accounts.service';
 import { Role } from 'src/roles/entities/role.entity';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: 'vantruong123456789', // Thay đổi thành khóa bí mật của bạn
-      signOptions: { expiresIn: '60m' }, // Thay đổi thời gian hết hạn nếu cần
+    ConfigModule.forRoot(), // Load biến môi trường từ .env
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('SECRET_KEY'),
+        signOptions: { expiresIn: '1h' },
+      }),
     }),
     TypeOrmModule.forFeature([Account, Role, User]),
   ],
