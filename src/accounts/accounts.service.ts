@@ -11,10 +11,9 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { Role } from 'src/roles/entities/role.entity';
-import { ApiResponse } from 'src/response/apires';
-import { Builder } from 'builder-pattern';
 import { AccountResponse } from './dto/accountResponse';
 import { convertStatus } from 'src/utils/convertStatusAccount';
+import { ApiRes } from 'src/response/response.dto';
 @Injectable()
 export class AccountsService {
   constructor(
@@ -50,26 +49,19 @@ export class AccountsService {
   async findAll() {
     try {
       const accounts = await this.accountRepository.find();
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Cập nhật tài khoản thành công')
-        .data(
-          accounts.map(
-            (account) =>
-              new AccountResponse(
-                account.username,
-                convertStatus(account.status),
-                account.createdAt.toLocaleString(),
-              ),
-          ),
-        )
-        .build();
+      return ApiRes.success(
+        'Lấy danh sách tài khoản thành công',
+        accounts.map(
+          (account) =>
+            new AccountResponse(
+              account.username,
+              convertStatus(account.status),
+              account.createdAt.toLocaleString(),
+            ),
+        ),
+      );
     } catch (error: any) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Lỗi từ cơ sở dữ liệu..')
-        .data('')
-        .build();
+      return ApiRes.error('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
     }
   }
 
@@ -93,50 +85,41 @@ export class AccountsService {
         convertStatus(account.status),
         account.createdAt.toLocaleString(),
       );
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Thông tin tài khoản ' + id)
-        .data(response)
-        .build();
+      return ApiRes.success('Thông tin tài khoản ' + id, response);
     } catch (err: any) {
       if (err instanceof HttpException) {
-        // Nếu lỗi là HttpException, trả về đúng status và message
-        return Builder<ApiResponse<any>>()
-          .statusCode(err.getStatus())
-          .message(err.message)
-          .data('')
-          .build();
+        return ApiRes.notFound(err.message, 'Thất bại');
       } else {
-        return Builder<ApiResponse<any>>()
-          .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-          .message('Lỗi từ cơ sở dữ liệu..')
-          .data('')
-          .build();
+        return ApiRes.internalServerError('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
       }
     }
   }
 
-  async update(
-    username: string,
-    updateAccountDto: UpdateAccountDto,
-  ): Promise<ApiResponse<any>> {
+  async update(username: string, updateAccountDto: UpdateAccountDto) {
     try {
       await this.accountRepository.update(username, updateAccountDto);
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Cập nhật tài khoản thành công')
-        .data('')
-        .build();
+      return ApiRes.success('Cập nhật tài khoản thành công', '');
     } catch (err: any) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Cập nhật tài khoản thất bại')
-        .data('')
-        .build();
+      return ApiRes.internalServerError('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} account`;
+  async remove(id: number) {
+    try {
+      const account = await this.accountRepository.findOne({
+        where: { accountId: id },
+      });
+      if (!account) {
+        throw new NotFoundException('Không tìm thấy tài khoản');
+      }
+      account.status = false;
+      await this.accountRepository.save(account);
+      return ApiRes.success('Xóa tài khoản thành công', '');
+    } catch (err: any) {
+      if (err instanceof NotFoundException) {
+        return ApiRes.notFound(err.message, 'Thất bại');
+      }
+      return ApiRes.internalServerError('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
+    }
   }
 }

@@ -14,7 +14,6 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
-import { ApiResponse } from 'src/response/apires';
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -51,7 +50,7 @@ export class AccountsController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  // @UseGuards(RolesGuard)
+  @ApiOkResponse({ description: 'Lấy danh sách tài khoản' })
   @Roles('ADMIN')
   findAll() {
     return this.accountsService.findAll();
@@ -69,15 +68,39 @@ export class AccountsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateAccountDto: UpdateAccountDto,
-  ): Promise<ApiResponse<string>> {
+  @ApiOkResponse({ description: 'Cập nhật thông tin tài khoản' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'ID của tài khoản',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        username: {
+          type: 'string',
+          description: 'Tên đăng nhập',
+        },
+        password: {
+          type: 'string',
+          description: 'Mật khẩu',
+        },
+      },
+    },
+  })
+  update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
     return this.accountsService.update(id, updateAccountDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
+  @ApiOkResponse({ description: 'Xóa tài khoản' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'ID của tài khoản',
+  })
   @Roles('ADMIN')
   remove(@Param('id') id: string) {
     return this.accountsService.remove(+id);
