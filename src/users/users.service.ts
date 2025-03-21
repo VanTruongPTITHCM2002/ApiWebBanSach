@@ -1,11 +1,10 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Builder } from 'builder-pattern';
-import { ApiResponse } from 'src/response/apires';
+import { ApiRes } from 'src/response/response.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,18 +17,10 @@ export class UsersService {
     let user: User = null;
     try {
       user = await this.userRepository.save(createUserDto);
-    } catch (error) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thêm thông tin cá nhân')
-        .data(user)
-        .build();
+      return ApiRes.created('Thêm thành công thông tin cá nhân', user);
+    } catch (error: any) {
+      return ApiRes.error('Không thể thêm thông tin cá nhân', 'Thất bại');
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.CREATED)
-      .message('Thêm thành công thông tin cá nhân')
-      .data('')
-      .build();
   }
 
   findAll() {

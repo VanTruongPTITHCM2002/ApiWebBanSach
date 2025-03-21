@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -26,69 +27,81 @@ export class AuthService {
   ) {}
 
   async signup(signUpDto: SignUpDto): Promise<ApiRes<string>> {
-    const account = await this.accountRepository.findOne({
-      where: { username: signUpDto.username },
-    });
+    try {
+      const account = await this.accountRepository.findOne({
+        where: { username: signUpDto.username },
+      });
 
-    if (account) {
-      throw new HttpException(
-        `${signUpDto.username} đã tồn tại`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+      if (account) {
+        throw new BadRequestException(`Tài khoản
+        ${signUpDto.username} đã tồn tại`);
+      }
 
-    if (signUpDto.password !== signUpDto.repassword) {
-      throw new HttpException(
-        `Mật khẩu không trùng khớp`,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    const newAccount = await this.accountService.create({
-      username: signUpDto.username,
-      password: signUpDto.password,
-    });
+      if (signUpDto.password !== signUpDto.repassword) {
+        throw new BadRequestException('Mật khẩu không trùng khớp');
+      }
+      const newAccount = await this.accountService.create({
+        username: signUpDto.username,
+        password: signUpDto.password,
+      });
 
-    if (!newAccount) {
-      throw new HttpException(
-        `Đăng ký tài khoản không thành công`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
+      if (!newAccount) {
+        throw new HttpException(
+          `Đăng ký tài khoản không thành công`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
 
-    const informAccount = this.userService.create({
-      firstname: signUpDto.firstname,
-      lastname: signUpDto.lastname,
-      email: signUpDto.email,
-      address: signUpDto.address,
-      phone: signUpDto.phone,
-      accountId: newAccount,
-    });
-    if (!informAccount) {
-      throw new HttpException(
-        `Không thể tạo thông tin cá nhân`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
+      const informAccount = this.userService.create({
+        firstname: signUpDto.firstname,
+        lastname: signUpDto.lastname,
+        email: signUpDto.email,
+        address: signUpDto.address,
+        phone: signUpDto.phone,
+        accountId: newAccount,
+      });
+      if (!informAccount) {
+        throw new HttpException(
+          `Không thể tạo thông tin cá nhân`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+      return ApiRes.created(
+        `Tài khoản ${signUpDto.username} đã được tạo thành công`,
+        null,
       );
+    } catch (error: any) {
+      if (error instanceof BadRequestException) {
+        return ApiRes.badRequest(error.message, 'Thất bại');
+      }
+      return ApiRes.error('Đã có lỗi xảy ra', 'Thất bại');
     }
-    return ApiRes.created(
-      `Tài khoản ${signUpDto.username} đã được tạo thành công`,
-      null,
-    );
   }
 
   async postLogin(username: string, password: string): Promise<ApiRes<string>> {
-    const account = await this.accountRepository.findOne({
-      where: { username: username },
-      relations: ['roleId'],
-    });
-    if (!account) {
-      throw new NotFoundException(`Không tìm thấy tài khoản ${username}`);
+    try {
+      const account = await this.accountRepository.findOne({
+        where: { username: username },
+        relations: ['roleId'],
+      });
+      if (!account) {
+        throw new NotFoundException(`Không tìm thấy tài khoản ${username}`);
+      }
+      const isMatch = await bcrypt.compare(password, account.password);
+      if (!isMatch) {
+        throw new UnauthorizedException('Sai mật khẩu!');
+      }
+      const token = await this.generateToken(account);
+      return ApiRes.success('Đăng nhập thành công', token);
+    } catch (error: any) {
+      if (error instanceof NotFoundException) {
+        return ApiRes.notFound(error.message, 'Thất bại');
+      }
+      if (error instanceof UnauthorizedException) {
+        return ApiRes.unauthorized(error.message, 'Thất bại');
+      }
+      return ApiRes.error('Đã có lỗi xảy ra', 'Thất bại');
     }
-    const isMatch = await bcrypt.compare(password, account.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('Sai mật khẩu!');
-    }
-    const token = await this.generateToken(account);
-    return ApiRes.success('Đăng nhập thành công', token);
   }
 
   async generateToken(account: Account): Promise<string> {

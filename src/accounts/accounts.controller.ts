@@ -15,6 +15,7 @@ import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
@@ -51,6 +52,7 @@ export class AccountsController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOkResponse({ description: 'Lấy danh sách tài khoản' })
+  @ApiBearerAuth()
   @Roles('ADMIN')
   findAll() {
     return this.accountsService.findAll();
@@ -58,6 +60,8 @@ export class AccountsController {
 
   @Get(':id')
   @ApiOkResponse({ description: 'Lấy thông tin tài khoản' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiParam({
     name: 'id',
     type: 'string',
@@ -69,6 +73,7 @@ export class AccountsController {
 
   @Patch(':id')
   @ApiOkResponse({ description: 'Cập nhật thông tin tài khoản' })
+  @ApiBearerAuth()
   @ApiParam({
     name: 'id',
     type: 'string',
@@ -89,6 +94,7 @@ export class AccountsController {
       },
     },
   })
+  @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
     return this.accountsService.update(id, updateAccountDto);
   }
@@ -96,6 +102,7 @@ export class AccountsController {
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @ApiOkResponse({ description: 'Xóa tài khoản' })
+  @ApiBearerAuth()
   @ApiParam({
     name: 'id',
     type: 'string',

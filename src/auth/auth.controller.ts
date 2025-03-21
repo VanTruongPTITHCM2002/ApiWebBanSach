@@ -17,6 +17,7 @@ export class AuthController {
 
   @Post('login')
   @ApiOkResponse({ description: 'Đăng nhập tài khoản' })
+  @ApiBody({ type: [LoginDto] })
   async login(@Body() loginDto: LoginDto): Promise<ApiRes<string>> {
     const accessToken = await this.authService.postLogin(
       loginDto.username,

@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Account } from './entities/account.entity';
@@ -22,6 +17,7 @@ export class AccountsService {
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
   ) {}
+  private readonly logger = new Logger(AccountsService.name);
 
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
     const { password, ...rest } = createAccountDto;
@@ -49,6 +45,7 @@ export class AccountsService {
   async findAll() {
     try {
       const accounts = await this.accountRepository.find();
+      this.logger.log('Lấy danh sách tài khoản thành công');
       return ApiRes.success(
         'Lấy danh sách tài khoản thành công',
         accounts.map(
@@ -61,7 +58,8 @@ export class AccountsService {
         ),
       );
     } catch (error: any) {
-      return ApiRes.error('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
+      this.logger.error(error.message);
+      return ApiRes.error('Đã có lỗi xảy ra...', 'Thất bại');
     }
   }
 
@@ -71,14 +69,7 @@ export class AccountsService {
         where: { username: id },
       });
       if (account === null) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.NOT_FOUND,
-            message: `Không tìm thấy tài khoản ${id}`,
-            error: 'Not Found',
-          },
-          HttpStatus.NOT_FOUND,
-        );
+        throw new NotFoundException('Không tìm thấy tài khoản');
       }
       const response = new AccountResponse(
         account.username,
@@ -87,7 +78,7 @@ export class AccountsService {
       );
       return ApiRes.success('Thông tin tài khoản ' + id, response);
     } catch (err: any) {
-      if (err instanceof HttpException) {
+      if (err instanceof NotFoundException) {
         return ApiRes.notFound(err.message, 'Thất bại');
       } else {
         return ApiRes.internalServerError('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
