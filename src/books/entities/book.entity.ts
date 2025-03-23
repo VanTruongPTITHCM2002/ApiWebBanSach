@@ -27,9 +27,9 @@ export class Book {
   @JoinColumn({ name: 'publisherId' })
   publisherId: Publisher;
 
-  @ManyToOne(() => Category, (category) => category.categoryId)
+  @ManyToOne(() => Category, (category) => category.books)
   @JoinColumn({ name: 'categoryId' })
-  categoryId: Category;
+  category: Category;
 
   @OneToMany(() => Orderdetail, (orderDetail) => orderDetail.books)
   orderdetails: Orderdetail[];
