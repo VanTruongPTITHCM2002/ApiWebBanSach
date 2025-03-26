@@ -31,7 +31,9 @@ export class CategoriesService {
         this.logger.error('Danh mục đã tồn tại');
         throw new BadRequestException('Danh mục đã tồn tại');
       }
-      await this.categoryRepository.save(createCategoryDto);
+      await this.categoryRepository.save(createCategoryDto, {
+        transaction: true,
+      });
       this.logger.log('Thêm danh mục thành công');
       return ApiRes.created('Thêm danh mục thành công', 'Thành công');
     } catch (error) {
@@ -56,15 +58,13 @@ export class CategoriesService {
       const category = await this.categoryRepository.findOne({
         where: { categoryId: id },
       });
-
-      const books = await this.bookRepository.find({
-        where: { category: { categoryId: id } },
-      });
-      console.log(books);
       if (!category) {
         this.logger.error('Không tìm thấy danh mục');
         throw new NotFoundException('Không tìm thấy danh mục');
       }
+      const books = await this.bookRepository.find({
+        where: { category: { categoryId: id } },
+      });
       this.logger.log('Tìm thấy danh mục');
       return ApiRes.success('Tìm thấy danh mục', books);
     } catch (error) {
@@ -99,12 +99,12 @@ export class CategoriesService {
       await this.categoryRepository.delete(id);
       this.logger.log('Xóa danh mục thành công');
       return ApiRes.success('Xóa danh mục thành công', 'Thành công');
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof BadRequestException) {
-        return ApiRes.badRequest('Danh mục này đang chứa sách', 'Thất bại');
+        return ApiRes.badRequest(error.message, 'Thất bại');
       }
       this.logger.error('Không thể xóa danh mục');
-      return ApiRes.error('Không thể xóa danh mục', 'Thất bại');
+      return ApiRes.error(error.message, 'Thất bại');
     }
   }
 }

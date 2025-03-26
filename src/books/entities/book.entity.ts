@@ -19,6 +19,9 @@ export class Book {
   @Column({ length: 45 })
   title: string;
 
+  @Column()
+  isDeleted: boolean;
+
   @ManyToOne(() => Author, (author) => author.authorId)
   @JoinColumn({ name: 'authorId' })
   authorId: Author;
