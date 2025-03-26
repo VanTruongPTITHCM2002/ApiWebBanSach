@@ -43,7 +43,7 @@ export class BooksController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: number) {
     return this.booksService.remove(id);
   }
 }
