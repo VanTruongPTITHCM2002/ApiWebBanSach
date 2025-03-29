@@ -46,9 +46,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        // entities: [Role,Account,Category,Author,Publisher
-        //   ,Book, User,Order,Cart, Cartitem,Orderdetail, Invoice, Invoiceitem
-        // ],
         entities: [ "dist/**/*.entity{.ts,.js}"],
         synchronize: true,
       }),

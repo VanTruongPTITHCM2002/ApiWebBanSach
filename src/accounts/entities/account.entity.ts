@@ -1,3 +1,4 @@
+import { Review } from 'src/reviews/entities/review.entity';
 import { Role } from 'src/roles/entities/role.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
@@ -6,6 +7,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -30,6 +32,9 @@ export class Account {
   @ManyToOne(() => Role, (role) => role.accounts)
   @JoinColumn({ name: 'roleId' })
   roleId: Role;
+
+  @OneToMany(() => Review, (review) => review.accountName)
+  reviewlst: Review[];
 
   @CreateDateColumn()
   createdAt: Date;

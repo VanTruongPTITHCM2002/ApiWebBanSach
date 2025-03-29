@@ -2,6 +2,7 @@ import { Author } from 'src/authors/entities/author.entity';
 import { Category } from 'src/categories/entities/category.entity';
 import { Orderdetail } from 'src/orderdetail/entities/orderdetail.entity';
 import { Publisher } from 'src/publishers/entities/publisher.entity';
+import { Review } from 'src/reviews/entities/review.entity';
 import {
   Column,
   Entity,
@@ -36,6 +37,9 @@ export class Book {
 
   @OneToMany(() => Orderdetail, (orderDetail) => orderDetail.books)
   orderdetails: Orderdetail[];
+
+  @OneToMany(() => Review, (review) => review.books)
+  reviewBook: Review[];
 
   @Column()
   price: number;
