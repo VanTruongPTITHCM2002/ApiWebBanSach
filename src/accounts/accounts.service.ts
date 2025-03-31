@@ -69,29 +69,32 @@ export class AccountsService {
         where: { username: id },
       });
       if (account === null) {
-        throw new NotFoundException('Không tìm thấy tài khoản');
+        this.logger.error('Không tìm thấy tài khoản');
+        return ApiRes.notFound('Không tìm thấy tài khoản', 'Thất bại');
       }
       const response = new AccountResponse(
         account.username,
         convertStatus(account.status),
         account.createdAt.toLocaleString(),
       );
+      this.logger.log('Tạo tài khoản thành công');
       return ApiRes.success('Thông tin tài khoản ' + id, response);
     } catch (err: any) {
-      if (err instanceof NotFoundException) {
-        return ApiRes.notFound(err.message, 'Thất bại');
-      } else {
-        return ApiRes.internalServerError('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
-      }
+      this.logger.error('Đã có lỗi xảy ra');
+      console.log(err.message);
+      return ApiRes.internalServerError('Đã có lỗi xảy ra', 'Thất bại');
     }
   }
 
   async update(username: string, updateAccountDto: UpdateAccountDto) {
     try {
       await this.accountRepository.update(username, updateAccountDto);
+      this.logger.log('Cập nhật tài khoản thành công');
       return ApiRes.success('Cập nhật tài khoản thành công', '');
     } catch (err: any) {
-      return ApiRes.internalServerError('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
+      this.logger.log('Đã có lỗi xảy ra');
+      console.log(err.message);
+      return ApiRes.internalServerError('Đã có lỗi xảy ra', 'Thất bại');
     }
   }
 
@@ -101,16 +104,17 @@ export class AccountsService {
         where: { accountId: id },
       });
       if (!account) {
-        throw new NotFoundException('Không tìm thấy tài khoản');
+        this.logger.error('Không tìm thấy tài khoản');
+        return ApiRes.notFound('Không tìm thấy tài khoản', 'Thất bại');
       }
       account.status = false;
       await this.accountRepository.save(account);
+      this.logger.log('Xóa tài khoản thành công');
       return ApiRes.success('Xóa tài khoản thành công', '');
     } catch (err: any) {
-      if (err instanceof NotFoundException) {
-        return ApiRes.notFound(err.message, 'Thất bại');
-      }
-      return ApiRes.internalServerError('Lỗi từ cơ sở dữ liệu..', 'Thất bại');
+      this.logger.error('Đã có lỗi xảy ra');
+      console.log(err.message);
+      return ApiRes.internalServerError('Đã có lỗi xảy ra', 'Thất bại');
     }
   }
 }

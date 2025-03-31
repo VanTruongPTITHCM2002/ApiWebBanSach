@@ -1,4 +1,3 @@
-/* eslint-disable prettier/prettier */
 import {
   Controller,
   Get,
@@ -15,7 +14,15 @@ import { UpdateBookDto } from './dto/update-book.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
 import { RolesGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
-import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiProperty, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiParam,
+  ApiProperty,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller('books')
 @ApiTags('books')
@@ -25,12 +32,12 @@ export class BooksController {
   @Post()
   @ApiBearerAuth()
   @ApiCreatedResponse({
-    description: 'Tạo sách thành công!'
+    description: 'Tạo sách thành công!',
   })
-  @UseGuards(JwtAuthGuard,RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @ApiProperty({
-    type: CreateBookDto
+    type: CreateBookDto,
   })
   create(@Body() createBookDto: CreateBookDto) {
     return this.booksService.create(createBookDto);
@@ -38,7 +45,7 @@ export class BooksController {
 
   @Get()
   @ApiOkResponse({
-    description: 'Lấy danh sách sách thành công'
+    description: 'Lấy danh sách sách thành công',
   })
   findAll() {
     return this.booksService.findAll();
@@ -46,23 +53,23 @@ export class BooksController {
 
   @Get(':id')
   @ApiOkResponse({
-    description: 'Tìm thành công sách cần tìm'
+    description: 'Tìm thành công sách cần tìm',
   })
-  @ApiParam({name: 'id', type:'number'})
+  @ApiParam({ name: 'id', type: 'number' })
   findOne(@Param('id') id: string) {
     return this.booksService.findOne(+id);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles("ADMIN")
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOkResponse({
-    description: 'Cập nhật thành công sách!'
+    description: 'Cập nhật thành công sách!',
   })
-  @ApiParam({name: 'id',type:'number'})
+  @ApiParam({ name: 'id', type: 'number' })
   @ApiBody({
-    type: UpdateBookDto
+    type: UpdateBookDto,
   })
   update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
     return this.booksService.update(+id, updateBookDto);
@@ -73,7 +80,8 @@ export class BooksController {
   @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiParam({
-    name: 'id',type: 'number'
+    name: 'id',
+    type: 'number',
   })
   remove(@Param('id') id: number) {
     return this.booksService.remove(id);
