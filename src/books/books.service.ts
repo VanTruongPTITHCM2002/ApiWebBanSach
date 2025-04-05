@@ -59,6 +59,7 @@ export class BooksService {
         price: createBookDto.price,
         stock: createBookDto.stock,
         isDeleted: false,
+        image: null,
       };
       await this.bookRepository.save(book);
       this.log.log('Thêm sách thành công');
@@ -71,11 +72,17 @@ export class BooksService {
 
   async findAll() {
     try {
-      const books = await this.bookRepository.find({
-        relations: ['authorId', 'publisherId', 'category'],
-      });
+      const books = await this.bookRepository.find();
       this.log.log('Hiện danh sách sách thành công');
-      return ApiRes.success('Hiện danh sách sách thành công', books);
+      return ApiRes.success(
+        'Hiện danh sách sách thành công',
+        books.map((book) => ({
+          ...book,
+          image: book.image
+            ? `data:image/jpeg;base64,${book.image.toString('base64')}`
+            : null,
+        })),
+      );
     } catch (error) {
       this.log.error('Không thể hiện danh sách sách');
       return ApiRes.error('Không thể hiện danh sách sách', 'Thất bại');

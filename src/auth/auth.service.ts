@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/accounts/entities/account.entity';
@@ -18,6 +11,7 @@ import { SignUpDto } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
+  private log: Logger = new Logger(AuthService.name);
   constructor(
     private readonly jwtService: JwtService,
     private readonly accountService: AccountsService,
@@ -33,24 +27,21 @@ export class AuthService {
       });
 
       if (account) {
-        throw new BadRequestException(`Tài khoản
-        ${signUpDto.username} đã tồn tại`);
+        this.log.error('Tài khoản đăng ký đã tồn tại trên hệ thống');
+        return ApiRes.badRequest(
+          `Tài khoản ${signUpDto.username} đã tồn tại`,
+          'Thất bại',
+        );
       }
 
       if (signUpDto.password !== signUpDto.repassword) {
-        throw new BadRequestException('Mật khẩu không trùng khớp');
+        this.log.error('Mật khẩu không trùng khớp');
+        return ApiRes.badRequest('Mật khẩu không trùng khớp', 'Thất bại');
       }
       const newAccount = await this.accountService.create({
         username: signUpDto.username,
         password: signUpDto.password,
       });
-
-      if (!newAccount) {
-        throw new HttpException(
-          `Đăng ký tài khoản không thành công`,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
 
       const informAccount = this.userService.create({
         firstname: signUpDto.firstname,
@@ -60,20 +51,19 @@ export class AuthService {
         phone: signUpDto.phone,
         accountId: newAccount,
       });
-      if (!informAccount) {
-        throw new HttpException(
-          `Không thể tạo thông tin cá nhân`,
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+
+      if (!newAccount || !informAccount) {
+        return ApiRes.error('Không thể tạo tài khoản', 'Thất bại');
       }
+
+      this.log.log('Tạo tài khoản thành công');
       return ApiRes.created(
         `Tài khoản ${signUpDto.username} đã được tạo thành công`,
         null,
       );
     } catch (error: any) {
-      if (error instanceof BadRequestException) {
-        return ApiRes.badRequest(error.message, 'Thất bại');
-      }
+      this.log.error('Đã có lỗi xảy ra khi tạo tài khoản');
+      console.log(error.message);
       return ApiRes.error('Đã có lỗi xảy ra', 'Thất bại');
     }
   }
@@ -85,7 +75,11 @@ export class AuthService {
         relations: ['roleId'],
       });
       if (!account) {
-        throw new NotFoundException(`Không tìm thấy tài khoản ${username}`);
+        this.log.error(`Không tìm thấy tài khoản ${username}`);
+        return ApiRes.notFound(
+          `Không tìm thấy tài khoản ${username}`,
+          'Thất bại',
+        );
       }
       const isMatch = await bcrypt.compare(password, account.password);
       if (!isMatch) {
@@ -94,12 +88,11 @@ export class AuthService {
       const token = await this.generateToken(account);
       return ApiRes.success('Đăng nhập thành công', token);
     } catch (error: any) {
-      if (error instanceof NotFoundException) {
-        return ApiRes.notFound(error.message, 'Thất bại');
-      }
       if (error instanceof UnauthorizedException) {
+        this.log.error('Sai mật khẩu đăng nhập');
         return ApiRes.unauthorized(error.message, 'Thất bại');
       }
+      this.log.error('Dẵ có lỗi xảy ra');
       return ApiRes.error('Đã có lỗi xảy ra', 'Thất bại');
     }
   }

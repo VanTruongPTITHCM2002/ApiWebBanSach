@@ -29,7 +29,7 @@ export class AuthController {
   @Post('signup')
   @ApiCreatedResponse({ description: 'Đăng ký tài khoản' })
   @ApiBody({ type: [SignUpDto] })
-  async singup(signUpDto: SignUpDto): Promise<ApiRes<string>> {
+  async singup(@Body() signUpDto: SignUpDto): Promise<ApiRes<string>> {
     return this.authService.signup(signUpDto);
   }
 }

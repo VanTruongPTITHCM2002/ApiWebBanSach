@@ -23,7 +23,6 @@ import {
   ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
-
 @Controller('books')
 @ApiTags('books')
 export class BooksController {

@@ -29,7 +29,7 @@ export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
   @Post()
-  @ApiCreatedResponse({ description: 'Tạo tài khoản' })
+  @ApiCreatedResponse({ description: 'Tạo tài khoản thành công' })
   @ApiBody({
     schema: {
       type: 'object',
