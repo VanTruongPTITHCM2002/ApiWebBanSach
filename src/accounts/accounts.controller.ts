@@ -16,7 +16,6 @@ import { RolesGuard } from 'src/common/guards/role.guard';
 import { Roles } from 'src/common/decorators/role.decorators';
 import {
   ApiBearerAuth,
-  ApiBody,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiParam,
@@ -30,21 +29,6 @@ export class AccountsController {
 
   @Post()
   @ApiCreatedResponse({ description: 'Tạo tài khoản thành công' })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        username: {
-          type: 'string',
-          description: 'Tên đăng nhập',
-        },
-        password: {
-          type: 'string',
-          description: 'Mật khẩu',
-        },
-      },
-    },
-  })
   create(@Body() createAccountDto: CreateAccountDto) {
     return this.accountsService.create(createAccountDto);
   }
@@ -79,21 +63,21 @@ export class AccountsController {
     type: 'string',
     description: 'ID của tài khoản',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        username: {
-          type: 'string',
-          description: 'Tên đăng nhập',
-        },
-        password: {
-          type: 'string',
-          description: 'Mật khẩu',
-        },
-      },
-    },
-  })
+  // @ApiBody({
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       username: {
+  //         type: 'string',
+  //         description: 'Tên đăng nhập',
+  //       },
+  //       password: {
+  //         type: 'string',
+  //         description: 'Mật khẩu',
+  //       },
+  //     },
+  //   },
+  // })
   @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
     return this.accountsService.update(id, updateAccountDto);

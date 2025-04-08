@@ -93,13 +93,61 @@ export class BooksService {
     try {
       const book = await this.bookRepository.findOne({
         where: { bookid: id },
-        relations: ['authorId', 'publisherId', 'categoryId'],
+        relations: ['authorId', 'publisherId', 'category'],
       });
       this.log.log('Hiện thông tin sách thành công');
       return ApiRes.success('Hiện thông tin sách thành công', book);
     } catch (error) {
+      console.log(error.message);
       this.log.error('Không thể hiện thông tin sách');
       return ApiRes.error('Không thể hiện thông tin sách', 'Thất bại');
+    }
+  }
+
+  async getBookByBuy() {
+    try {
+      const books = await this.bookRepository
+        .createQueryBuilder('book')
+        .leftJoin('book.orderdetails', 'detail')
+        .leftJoin('detail.orderId', 'order')
+        .where('order.status = :status', { status: 1 })
+        .select(['book', 'COUNT(*) AS order_count'])
+        .groupBy('book.bookid')
+        .getMany();
+      this.log.log('Lấy thành công danh sách sách mua nhiều nhất');
+      return ApiRes.success(
+        'Lấy thành công danh sách sách mua nhiều nhất',
+        books,
+      );
+    } catch (error: any) {
+      console.log(error.message);
+      this.log.error('Không thể hiện danh sách sách mua nhiều nhất');
+      ApiRes.error('Không thể hiện danh sách sách mua nhiều nhất', 'Thất bại');
+    }
+  }
+
+  async getBooksByReviews() {
+    try {
+      const books = await this.bookRepository
+        .createQueryBuilder('book')
+        .leftJoin('book.reviewBook', 'review')
+        .andWhere('review.rating = :rating', { rating: 5 })
+        .select(['book', 'Count(*) as review_count'])
+        .groupBy('book.bookid')
+        .having('Count(*) >:minCount', { minCount: 5 })
+        .getMany();
+      this.log.log('Lấy thành công danh sách sách được đánh giá cao');
+      return ApiRes.success(
+        'Lấy thành công danh sách được đánh giá cao',
+        books,
+      );
+    } catch (error) {
+      this.log.error('Không thể lấy danh sách sách được đánh giá cao');
+      console.log(error.message);
+      return ApiRes.error(
+        'Không thể lấy danh sách sách được đánh giá cao',
+        'Thất bại',
+      );
     }
   }
 

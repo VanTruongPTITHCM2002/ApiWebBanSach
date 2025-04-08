@@ -50,12 +50,22 @@ export class BooksController {
     return this.booksService.findAll();
   }
 
+  @Get('/buys')
+  getBookByBuy() {
+    return this.booksService.getBookByBuy();
+  }
+
+  @Get('/reviews')
+  getBookByReviews() {
+    return this.booksService.getBooksByReviews();
+  }
+
   @Get(':id')
   @ApiOkResponse({
     description: 'Tìm thành công sách cần tìm',
   })
   @ApiParam({ name: 'id', type: 'number' })
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: number) {
     return this.booksService.findOne(+id);
   }
 
