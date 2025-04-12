@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -60,12 +62,17 @@ export class BooksController {
     return this.booksService.getBooksByReviews();
   }
 
+  @Get('/name')
+  getBookByBookName(@Query('bookName') bookName: string) {
+    return this.booksService.getBookByName(bookName);
+  }
+
   @Get(':id')
   @ApiOkResponse({
     description: 'Tìm thành công sách cần tìm',
   })
   @ApiParam({ name: 'id', type: 'number' })
-  findOne(@Param('id') id: number) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.booksService.findOne(+id);
   }
 

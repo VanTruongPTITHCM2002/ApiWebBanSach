@@ -3,7 +3,7 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from './entities/book.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Author } from 'src/authors/entities/author.entity';
 import { Publisher } from 'src/publishers/entities/publisher.entity';
 import { Category } from 'src/categories/entities/category.entity';
@@ -148,6 +148,20 @@ export class BooksService {
         'Không thể lấy danh sách sách được đánh giá cao',
         'Thất bại',
       );
+    }
+  }
+
+  async getBookByName(bookName: string) {
+    try {
+      const book = await this.bookRepository.findBy({
+        title: ILike(`%${bookName}%`),
+      });
+      this.log.log('Tìm kiếm sách thành công theo tên');
+      return ApiRes.success('Tìm kiếm thành công sách theo tên', book);
+    } catch (error: any) {
+      console.log(error.message);
+      this.log.error('Tìm kiếm sách thất bại');
+      return ApiRes.error('Tìm kiếm sách thất bại', 'Thất bại');
     }
   }
 
