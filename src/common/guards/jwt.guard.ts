@@ -30,7 +30,14 @@ export class JwtAuthGuard implements CanActivate {
       request.user = payload;
       return true;
     } catch (err) {
-      throw new UnauthorizedException('Token không hợp lệ');
+      if (err.name === 'TokenExpiredError') {
+        throw new UnauthorizedException(
+          'Vui lòng xác thực lại token đã hết hạn',
+        );
+      } else if (err.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Token không hợp lệ');
+      }
+      throw new UnauthorizedException('Xác thực thất bại');
     }
   }
 }
