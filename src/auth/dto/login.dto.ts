@@ -12,6 +12,6 @@ export class LoginDto {
   @ApiProperty({ example: 'mypassword', description: 'Mật khẩu' })
   @IsString({ message: 'Mật khẩu phải là chuỗi' })
   @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
-  @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
+  @MinLength(4, { message: 'Mật khẩu phải có ít nhất 4 ký tự' })
   password: string;
 }

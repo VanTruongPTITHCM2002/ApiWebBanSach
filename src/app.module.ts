@@ -18,6 +18,9 @@ import { CartitemsModule } from './cartitems/cartitems.module';
 import { OrderdetailModule } from './orderdetail/orderdetail.module';
 import { InvoiceitemModule } from './invoiceitem/invoiceitem.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Role } from './roles/entities/role.entity';
+import { Account } from './accounts/entities/account.entity';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -52,6 +55,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     OrderdetailModule,
     InvoiceitemModule,
     ConfigModule.forRoot(),
+    TypeOrmModule.forFeature([Role, Account]),
   ],
+  providers: [AppService],
 })
 export class AppModule {}
