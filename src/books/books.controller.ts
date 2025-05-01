@@ -48,8 +48,8 @@ export class BooksController {
   @ApiOkResponse({
     description: 'Lấy danh sách sách thành công',
   })
-  findAll() {
-    return this.booksService.findAll();
+  findAll(@Query('page') page: number = 1, @Query('size') size: number = 2) {
+    return this.booksService.findAll(page, size);
   }
 
   @Get('/buys')

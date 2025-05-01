@@ -70,19 +70,14 @@ export class BooksService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number, size: number) {
     try {
-      const books = await this.bookRepository.find();
+      const books = await this.bookRepository.findAndCount({
+        skip: (page - 1) * size,
+        take: size,
+      });
       this.log.log('Hiện danh sách sách thành công');
-      return ApiRes.success(
-        'Hiện danh sách sách thành công',
-        books.map((book) => ({
-          ...book,
-          image: book.image
-            ? `data:image/jpeg;base64,${book.image.toString('base64')}`
-            : null,
-        })),
-      );
+      return ApiRes.success('Hiện danh sách sách thành công', books);
     } catch (error) {
       this.log.error('Không thể hiện danh sách sách');
       return ApiRes.error('Không thể hiện danh sách sách', 'Thất bại');
