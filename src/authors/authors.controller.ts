@@ -37,6 +37,11 @@ export class AuthorsController {
     return this.authorsService.findOne(id);
   }
 
+  @Get(':authorName/books')
+  findOneAuthorManyBook(@Param('authorName') authorName: string) {
+    return this.authorsService.findOneAuthorManyBook(authorName);
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')

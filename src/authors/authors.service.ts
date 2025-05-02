@@ -25,8 +25,10 @@ export class AuthorsService {
         this.log.error('Tác giả đã tồn tại');
         return ApiRes.badRequest('Tác giả đã tồn tại', 'Thất bại');
       }
+
       authorName = await this.authorRepository.save(createAuthorDto);
       this.log.log('Thêm tác giả thành công');
+
       return ApiRes.created('Thêm tác giả thành công', authorName);
     } catch (error) {
       this.log.error('Thêm tác giả thất bại');
@@ -73,6 +75,22 @@ export class AuthorsService {
       console.log(error.message);
       return ApiRes.error('Không thể tìm kiếm tác giả', 'Thất bại');
     }
+  }
+
+  async findOneAuthorManyBook(authorName: string) {
+    const author = await this.authorRepository.findOne({
+      where: {
+        lastname: authorName,
+      },
+      relations: ['books'],
+    });
+
+    if (!author) {
+      this.log.error('Tác giả không tồn tại');
+      return ApiRes.badRequest('Tác giả không tồn tại', 'Thất bại');
+    }
+
+    return ApiRes.success('Lấy sách của tác giả thành công', author);
   }
 
   async update(id: number, updateAuthorDto: UpdateAuthorDto) {
