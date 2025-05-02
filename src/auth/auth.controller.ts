@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { ApiRes } from 'src/response/response.dto';
 import { LoginDto } from './dto/login.dto';
+import { AuthResponse } from 'src/response/auth.response';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -12,12 +13,14 @@ export class AuthController {
 
   @Post('login')
   @ApiOkResponse({ description: 'Đăng nhập tài khoản' })
-  async login(@Body() loginDto: LoginDto): Promise<ApiRes<string>> {
-    const accessToken = await this.authService.postLogin(
+  async login(
+    @Body() loginDto: LoginDto,
+  ): Promise<ApiRes<string | AuthResponse>> {
+    const response = await this.authService.postLogin(
       loginDto.username,
       loginDto.password,
     );
-    return accessToken;
+    return response;
   }
 
   @Post('signup')

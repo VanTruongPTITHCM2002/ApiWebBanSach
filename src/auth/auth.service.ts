@@ -8,6 +8,7 @@ import { AccountsService } from 'src/accounts/accounts.service';
 import { UsersService } from 'src/users/users.service';
 import { ApiRes } from 'src/response/response.dto';
 import { SignUpDto } from './dto/signup.dto';
+import { AuthResponse } from 'src/response/auth.response';
 
 @Injectable()
 export class AuthService {
@@ -68,7 +69,10 @@ export class AuthService {
     }
   }
 
-  async postLogin(username: string, password: string): Promise<ApiRes<string>> {
+  async postLogin(
+    username: string,
+    password: string,
+  ): Promise<ApiRes<string | AuthResponse>> {
     try {
       const account = await this.accountRepository.findOne({
         where: { username: username },
@@ -85,8 +89,10 @@ export class AuthService {
       if (!isMatch) {
         throw new UnauthorizedException('Sai mật khẩu!');
       }
-      const token = await this.generateToken(account);
-      return ApiRes.success('Đăng nhập thành công', token);
+      const response: AuthResponse = {
+        access_token: await this.generateToken(account),
+      };
+      return ApiRes.success('Đăng nhập thành công', response);
     } catch (error: any) {
       if (error instanceof UnauthorizedException) {
         this.log.error('Sai mật khẩu đăng nhập');
