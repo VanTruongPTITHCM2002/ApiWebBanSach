@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AuthorsService } from './authors.service';
 import { CreateAuthorDto } from './dto/create-author.dto';
@@ -27,8 +28,8 @@ export class AuthorsController {
   }
 
   @Get()
-  findAll() {
-    return this.authorsService.findAll();
+  findAll(@Query('page') page: number = 1, @Query('size') size: number = 3) {
+    return this.authorsService.findAll(page, size);
   }
 
   @Get(':id')

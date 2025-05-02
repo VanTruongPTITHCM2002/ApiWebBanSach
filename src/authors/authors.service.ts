@@ -4,7 +4,6 @@ import { UpdateAuthorDto } from './dto/update-author.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Author } from './entities/author.entity';
 import { Repository } from 'typeorm';
-import { AuthorResponse } from './dto/authorResponse';
 import { ApiRes } from 'src/response/response.dto';
 
 @Injectable()
@@ -36,16 +35,20 @@ export class AuthorsService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number, size: number) {
+    const skip = (page - 1) * size;
+    const take = size;
     try {
-      const authors = await this.authorRepository.find();
+      const authors = await this.authorRepository.findAndCount({
+        skip: skip,
+        take: take,
+      });
       this.log.log('Lấy danh sách tác giả thành công');
-      return ApiRes.success(
-        'Danh sách tác giả',
-        authors.map(
-          (author) => new AuthorResponse(author.firstname, author.lastname),
-        ),
-      );
+      return ApiRes.success('Danh sách tác giả', {
+        result: authors[0],
+        page: +page,
+        size: +size,
+      });
     } catch (error) {
       this.log.error('Lấy danh sách tác giả thất bại');
       console.log(error.message);
