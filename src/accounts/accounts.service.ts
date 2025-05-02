@@ -47,22 +47,26 @@ export class AccountsService {
     const take = size;
     try {
       const accounts = await this.accountRepository.findAndCount({
+        where: { status: true },
         skip: skip,
         take: take,
       });
       this.logger.log('Lấy danh sách tài khoản thành công');
-      return ApiRes.success('Lấy danh sách tài khoản thành công', {
-        result: accounts[0].map(
-          (account) =>
-            new AccountResponse(
-              account.username,
-              convertStatus(account.status),
-              account.createdAt.toLocaleString(),
-            ),
-        ),
-        page: skip + 1,
-        size: take,
-      });
+      return ApiRes.success(
+        `Lấy danh sách tài khoản thành công ở trang ${page}`,
+        {
+          result: accounts[0].map(
+            (account) =>
+              new AccountResponse(
+                account.username,
+                convertStatus(account.status),
+                account.createdAt.toLocaleString(),
+              ),
+          ),
+          page: skip + 1,
+          size: take,
+        },
+      );
     } catch (error: any) {
       this.logger.error(error.message);
       return ApiRes.error('Đã có lỗi xảy ra...', 'Thất bại');
@@ -104,10 +108,10 @@ export class AccountsService {
     }
   }
 
-  async remove(id: number) {
+  async remove(username: string) {
     try {
       const account = await this.accountRepository.findOne({
-        where: { accountId: id },
+        where: { username: username },
       });
       if (!account) {
         this.logger.error('Không tìm thấy tài khoản');

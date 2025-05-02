@@ -85,6 +85,11 @@ export class AuthService {
           'Thất bại',
         );
       }
+
+      if (!account.status) {
+        return ApiRes.forbidden('Bạn không thể đăng nhập', 'Thất bại');
+      }
+
       const isMatch = await bcrypt.compare(password, account.password);
       if (!isMatch) {
         throw new UnauthorizedException('Sai mật khẩu!');

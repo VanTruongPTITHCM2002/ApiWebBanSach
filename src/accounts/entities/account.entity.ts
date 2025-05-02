@@ -20,7 +20,7 @@ export class Account {
   @OneToOne(() => User, (user) => user.accountFK)
   user: User;
 
-  @Column({ length: 45 })
+  @Column({ length: 45, unique: true })
   username: string;
 
   @Column({ length: 255 })

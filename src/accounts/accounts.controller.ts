@@ -89,12 +89,12 @@ export class AccountsController {
   @ApiOkResponse({ description: 'Xóa tài khoản' })
   @ApiBearerAuth()
   @ApiParam({
-    name: 'id',
+    name: 'username',
     type: 'string',
-    description: 'ID của tài khoản',
+    description: 'Tên của tài khoản',
   })
   @Roles('ADMIN')
-  remove(@Param('id') id: string) {
-    return this.accountsService.remove(+id);
+  remove(@Param('username') username: string) {
+    return this.accountsService.remove(username);
   }
 }
