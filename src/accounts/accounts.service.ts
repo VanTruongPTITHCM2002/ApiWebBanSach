@@ -42,13 +42,17 @@ export class AccountsService {
     return await this.accountRepository.save(account);
   }
 
-  async findAll() {
+  async findAll(page: number, size: number) {
+    const skip = (page - 1) * size;
+    const take = size;
     try {
-      const accounts = await this.accountRepository.find();
+      const accounts = await this.accountRepository.findAndCount({
+        skip: skip,
+        take: take,
+      });
       this.logger.log('Lấy danh sách tài khoản thành công');
-      return ApiRes.success(
-        'Lấy danh sách tài khoản thành công',
-        accounts.map(
+      return ApiRes.success('Lấy danh sách tài khoản thành công', {
+        result: accounts[0].map(
           (account) =>
             new AccountResponse(
               account.username,
@@ -56,7 +60,9 @@ export class AccountsService {
               account.createdAt.toLocaleString(),
             ),
         ),
-      );
+        page: skip + 1,
+        size: take,
+      });
     } catch (error: any) {
       this.logger.error(error.message);
       return ApiRes.error('Đã có lỗi xảy ra...', 'Thất bại');

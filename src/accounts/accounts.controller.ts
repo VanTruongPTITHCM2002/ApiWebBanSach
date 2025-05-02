@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -38,8 +39,8 @@ export class AccountsController {
   @ApiOkResponse({ description: 'Lấy danh sách tài khoản' })
   @ApiBearerAuth()
   @Roles('ADMIN')
-  findAll() {
-    return this.accountsService.findAll();
+  findAll(@Query('page') page: number = 1, @Query('size') size: number = 3) {
+    return this.accountsService.findAll(page, size);
   }
 
   @Get(':id')
