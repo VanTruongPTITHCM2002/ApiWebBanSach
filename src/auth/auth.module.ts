@@ -11,6 +11,7 @@ import { Role } from 'src/roles/entities/role.entity';
 import { User } from 'src/users/entities/user.entity';
 import { UsersService } from 'src/users/users.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
     }),
     TypeOrmModule.forFeature([Account, Role, User]),
+    PassportModule,
   ],
   providers: [AuthService, JwtStrategy, AccountsService, UsersService],
   controllers: [AuthController],

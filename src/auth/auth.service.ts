@@ -100,10 +100,9 @@ export class AuthService {
       return ApiRes.success('Đăng nhập thành công', response);
     } catch (error: any) {
       if (error instanceof UnauthorizedException) {
-        this.log.error('Sai mật khẩu đăng nhập');
-        return ApiRes.unauthorized(error.message, 'Thất bại');
+        throw error; // bắt rồi ném lại
       }
-      this.log.error('Dẵ có lỗi xảy ra');
+      this.log.error('Đã có lỗi xảy ra');
       return ApiRes.error('Đã có lỗi xảy ra', 'Thất bại');
     }
   }

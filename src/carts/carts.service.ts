@@ -80,29 +80,50 @@ export class CartsService {
 
   async findOne(username: string) {
     try {
-      const account = this.accountRepository.findOne({
+      const account = await this.accountRepository.findOne({
         where: { username: username },
       });
       if (!account) {
         throw new NotFoundException('Không tìm thấy tài khoản này');
       }
-      const user = this.userRepository.findOne({
-        where: { accountFK: await account },
+      const user = await this.userRepository.findOne({
+        where: {
+          accountFK: {
+            username: account.username,
+          },
+        },
       });
       if (!user) {
         throw new NotFoundException(
           'Không tìm thấy user tương thích với tài khoản',
         );
       }
-      const cart = this.cartRepository.findOne({
-        where: { usersId: await user },
+      const cart = await this.cartRepository.findOne({
+        where: {
+          usersId: {
+            usersId: user.usersId,
+          },
+        },
+        relations: ['cartItemId', 'cartItemId.bookId'],
       });
+
+      const result = {
+        cartId: cart.cartId,
+        createAt: cart.createAt,
+        status: cart.status,
+        cartItems: cart.cartItemId.map((item) => ({
+          quantity: item.quantity,
+          price: item.price,
+          title: item.bookId.title,
+        })),
+      };
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.OK)
         .message('Danh sách giỏ hàng của ' + username)
-        .data(cart)
+        .data(result)
         .build();
     } catch (error: any) {
+      console.log(error);
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
         .message('Lỗi xảy ra từ cơ sở dữ liệu....')
