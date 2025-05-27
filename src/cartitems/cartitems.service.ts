@@ -56,17 +56,41 @@ export class CartitemsService {
         throw new BadRequestException('Không đủ số lượng sách');
       // Tạo giỏ hàng
 
-      const cartDB = await this.cartRepository.save({
-        usersId: user,
-        createAt: new Date(createCartitemDto.cartDto.createAt),
-        status: true,
+      let cartExists = await this.cartRepository.findOne({
+        where: {
+          usersId: { usersId: user.usersId },
+          status: true,
+        },
       });
-      await this.cartItemRepository.save({
-        cartId: cartDB,
-        bookId: book,
-        price: book.price,
-        quantity: createCartitemDto.quantity,
+
+      if (!cartExists) {
+        cartExists = await this.cartRepository.save({
+          usersId: user,
+          createAt: new Date(createCartitemDto.cartDto.createAt),
+          status: true,
+        });
+      }
+
+      const isBookExistsCart = await this.cartItemRepository.findOne({
+        where: {
+          carts: { cartId: cartExists.cartId },
+          bookId: { bookid: book.bookid },
+        },
       });
+
+      if (isBookExistsCart) {
+        createCartitemDto.quantity += isBookExistsCart.quantity;
+        await this.cartItemRepository.update(isBookExistsCart.cartitemId, {
+          quantity: createCartitemDto.quantity,
+        });
+      } else {
+        await this.cartItemRepository.save({
+          carts: cartExists,
+          bookId: book,
+          price: book.price,
+          quantity: createCartitemDto.quantity,
+        });
+      }
 
       book.stock -= createCartitemDto.quantity;
       await this.bookRepository.save(book);

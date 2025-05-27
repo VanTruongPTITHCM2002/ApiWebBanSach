@@ -8,5 +8,5 @@ export class CreateCartDto {
 
   @IsNotEmpty()
   @Transform(({ value }) => parse(value, 'HH:mm:ss dd/MM/yyyy', new Date()))
-  createAt: Date;
+  createAt?: Date;
 }

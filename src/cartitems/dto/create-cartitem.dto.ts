@@ -8,7 +8,6 @@ import {
 import { CreateCartDto } from 'src/carts/dto/create-cart.dto';
 
 export class CreateCartitemDto {
-  @IsNotEmpty()
   @ValidateNested() // Đảm bảo DTO lồng nhau được validate
   @Type(() => CreateCartDto) // Cần có @Type() để transform đúng
   cartDto: CreateCartDto;
