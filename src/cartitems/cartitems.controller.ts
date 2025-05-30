@@ -39,6 +39,7 @@ export class CartitemsController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(
     @Param('id') id: string,
     @Body() updateCartitemDto: UpdateCartitemDto,

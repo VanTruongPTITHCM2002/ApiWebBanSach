@@ -112,6 +112,7 @@ export class CartsService {
         createAt: cart.createAt,
         status: cart.status,
         cartItems: cart.cartItemId.map((item) => ({
+          cartItemId: item.cartitemId,
           quantity: item.quantity,
           price: item.price,
           title: item.bookId.title,

@@ -191,6 +191,7 @@ export class CartitemsService {
       if (!book) {
         throw new NotFoundException('Không tìm thấy sách này');
       }
+      console.log(updateCartitemDto.cartItemId);
       const cartItemUser = await this.cartItemRepository.findOne({
         where: {
           // cartId: { cartId: cart.cartId },
@@ -200,6 +201,8 @@ export class CartitemsService {
           cartitemId: updateCartitemDto.cartItemId,
         },
       });
+
+      console.log(cartItemUser);
 
       if (!cartItemUser) {
         await this.cartItemRepository.save({
