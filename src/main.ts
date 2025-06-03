@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
+import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { ApiExceptionFilter } from './common/filters/api.filter';
@@ -21,6 +21,10 @@ app.useGlobalPipes(
     transform: true, // Quan trọng! Bật transform để DTO hoạt động
     whitelist: true,
     forbidNonWhitelisted: true,
+     exceptionFactory: (errors) => {
+      console.error('Validation errors:', errors); // 👈 log ra lỗi
+      return new BadRequestException(errors);
+    },
   }),
 );
 

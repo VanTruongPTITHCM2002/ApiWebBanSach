@@ -26,7 +26,7 @@ export class BooksService {
     private readonly categoryRepository: Repository<Category>,
   ) {}
 
-  async create(createBookDto: CreateBookDto) {
+  async create(createBookDto: CreateBookDto, file: Express.Multer.File) {
     try {
       const [author, publisher, category] = await Promise.all([
         this.authorRepository
@@ -54,13 +54,16 @@ export class BooksService {
       const book = {
         title: createBookDto.title,
         authorId: author,
-        categoryId: category,
+        category: category,
         publisherId: publisher,
         price: createBookDto.price,
         stock: createBookDto.stock,
         isDeleted: false,
-        image: null,
+        status: true,
+        image: file?.buffer,
       };
+
+      console.log(book);
       await this.bookRepository.save(book);
       this.log.log('Thêm sách thành công');
       return ApiRes.success('Thêm sách thành công', 'Thành công');
@@ -90,8 +93,20 @@ export class BooksService {
         where: { bookid: id },
         relations: ['authorId', 'publisherId', 'category'],
       });
+
+      // Gán lại hoặc tạo trường mới (nên tạo mới để khỏi lẫn lộn)
+      const bookWithImageBase64 = {
+        ...book,
+        image: undefined, // hoặc xóa trường image gốc
+        imageBase64: book.image
+          ? `data:image/jpeg;base64,${book.image.toString('base64')}`
+          : null,
+      };
       this.log.log('Hiện thông tin sách thành công');
-      return ApiRes.success('Hiện thông tin sách thành công', book);
+      return ApiRes.success(
+        'Hiện thông tin sách thành công',
+        bookWithImageBase64,
+      );
     } catch (error) {
       console.log(error.message);
       this.log.error('Không thể hiện thông tin sách');

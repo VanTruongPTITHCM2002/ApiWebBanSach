@@ -9,6 +9,8 @@ import {
   UseGuards,
   ParseIntPipe,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -25,6 +27,7 @@ import {
   ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
 @Controller('books')
 @ApiTags('books')
 export class BooksController {
@@ -40,8 +43,12 @@ export class BooksController {
   @ApiProperty({
     type: CreateBookDto,
   })
-  create(@Body() createBookDto: CreateBookDto) {
-    return this.booksService.create(createBookDto);
+  @UseInterceptors(FileInterceptor('image'))
+  create(
+    @Body() createBookDto: CreateBookDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.booksService.create(createBookDto, file);
   }
 
   @Get()

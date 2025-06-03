@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsNumber, Length } from 'class-validator';
+import { IsNotEmpty, Length } from 'class-validator';
 
 export class CreateBookDto {
   @IsNotEmpty()
@@ -17,11 +17,9 @@ export class CreateBookDto {
   @Length(4, 45)
   categoryName: string | number;
 
-  @IsNumber()
   @IsNotEmpty()
   price: number;
 
-  @IsNumber()
   @IsNotEmpty()
   stock: number;
 }

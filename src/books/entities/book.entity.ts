@@ -47,6 +47,9 @@ export class Book {
   @Column()
   stock: number;
 
-  @Column({ type: 'blob', select: false, nullable: true })
+  @Column()
+  status: boolean;
+
+  @Column({ type: 'mediumblob', nullable: true })
   image: Buffer;
 }
