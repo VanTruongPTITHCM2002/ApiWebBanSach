@@ -65,8 +65,16 @@ export class CategoriesService {
       const books = await this.bookRepository.find({
         where: { category: { categoryId: id } },
       });
+
+      const result = books.map((book) => ({
+        ...book,
+        image: undefined,
+        imageBase64: book.image
+          ? `data:image/jpeg;base64,${book.image.toString('base64')}`
+          : null,
+      }));
       this.logger.log('Tìm thấy danh mục');
-      return ApiRes.success('Tìm thấy danh mục', books);
+      return ApiRes.success('Tìm thấy danh mục', result);
     } catch (error) {
       if (error instanceof NotFoundException) {
         return ApiRes.notFound('Không tìm thấy danh mục', 'Thất bại');
