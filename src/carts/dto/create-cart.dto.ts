@@ -6,7 +6,6 @@ export class CreateCartDto {
   @IsNotEmpty()
   username: string;
 
-  @IsNotEmpty()
   @Transform(({ value }) => parse(value, 'HH:mm:ss dd/MM/yyyy', new Date()))
   createAt?: Date;
 }
