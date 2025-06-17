@@ -75,12 +75,25 @@ export class BooksService {
 
   async findAll(page: number, size: number) {
     try {
-      const books = await this.bookRepository.findAndCount({
+      const books = await this.bookRepository.find({
         skip: (page - 1) * size,
         take: size,
       });
+      const booksWithBase64 = books.map((book) => {
+        let imageBase64 = null;
+
+        if (book.image && book.image instanceof Buffer) {
+          imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
+        }
+
+        return {
+          ...book,
+          imageBase64, // thêm thuộc tính mới
+        };
+      });
+
       this.log.log('Hiện danh sách sách thành công');
-      return ApiRes.success('Hiện danh sách sách thành công', books);
+      return ApiRes.success('Hiện danh sách sách thành công', booksWithBase64);
     } catch (error) {
       this.log.error('Không thể hiện danh sách sách');
       return ApiRes.error('Không thể hiện danh sách sách', 'Thất bại');

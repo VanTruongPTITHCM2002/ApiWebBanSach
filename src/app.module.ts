@@ -17,26 +17,15 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { CartitemsModule } from './cartitems/cartitems.module';
 import { OrderdetailModule } from './orderdetail/orderdetail.module';
 import { InvoiceitemModule } from './invoiceitem/invoiceitem.module';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Role } from './roles/entities/role.entity';
 import { Account } from './accounts/entities/account.entity';
 import { AppService } from './app.service';
+import { ormConfig } from './config/ormconfig';
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get('DB_HOST'),
-        port: +configService.get('DB_PORT'),
-        username: configService.get('DB_USERNAME'),
-        password: configService.get('DB_PASSWORD'),
-        database: configService.get('DB_DATABASE'),
-        entities: ['dist/**/*.entity{.ts,.js}'],
-        synchronize: true,
-      }),
-      inject: [ConfigService],
+    TypeOrmModule.forRoot({
+      ...ormConfig,
     }),
     EmployeesModule,
     UsersModule,
@@ -54,7 +43,6 @@ import { AppService } from './app.service';
     CartitemsModule,
     OrderdetailModule,
     InvoiceitemModule,
-    ConfigModule.forRoot(),
     TypeOrmModule.forFeature([Role, Account]),
   ],
   providers: [AppService],
