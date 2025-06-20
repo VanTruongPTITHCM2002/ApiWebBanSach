@@ -42,9 +42,12 @@ export class CategoriesService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number, size: number) {
     try {
-      const categories = await this.categoryRepository.find();
+      const categories = await this.categoryRepository.find({
+        skip: (page - 1) * size,
+        take: size,
+      });
       this.logger.log('Lấy danh sách danh mục thành công');
       return ApiRes.success('Danh sách danh mục của sách', categories);
     } catch (error) {

@@ -46,11 +46,7 @@ export class AuthorsService {
         take: take,
       });
       this.log.log('Lấy danh sách tác giả thành công');
-      return ApiRes.success('Danh sách tác giả', {
-        result: authors[0],
-        page: +page,
-        size: +size,
-      });
+      return ApiRes.success('Danh sách tác giả', authors[0]);
     } catch (error) {
       this.log.error('Lấy danh sách tác giả thất bại');
       console.log(error.message);

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { PublishersService } from './publishers.service';
 import { CreatePublisherDto } from './dto/create-publisher.dto';
@@ -29,8 +30,8 @@ export class PublishersController {
   }
 
   @Get()
-  findAll() {
-    return this.publishersService.findAll();
+  findAll(@Query('page') page: number = 1, @Query('size') size: number = 5) {
+    return this.publishersService.findAll(page, size);
   }
 
   @Get(':id')

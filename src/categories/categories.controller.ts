@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -43,8 +44,8 @@ export class CategoriesController {
   @ApiOkResponse({
     description: 'The records have been successfully retrieved.',
   })
-  findAll() {
-    return this.categoriesService.findAll();
+  findAll(@Query('page') page: number = 1, @Query('size') size: number = 5) {
+    return this.categoriesService.findAll(page, size);
   }
 
   @Get(':id')

@@ -6,6 +6,7 @@ import { Publisher } from './entities/publisher.entity';
 import { Repository } from 'typeorm';
 import { Builder } from 'builder-pattern';
 import { ApiResponse } from 'src/response/apires';
+import { ApiRes } from 'src/response/response.dto';
 
 @Injectable()
 export class PublishersService {
@@ -30,10 +31,18 @@ export class PublishersService {
       .build();
   }
 
-  async findAll() {
+  async findAll(page: number, size: number) {
     let publishers = [];
     try {
-      publishers = await this.publisherRepository.find();
+      publishers = await this.publisherRepository.find({
+        skip: (page - 1) * size,
+        take: size,
+      });
+
+      return ApiRes.success(
+        'Hiện danh sách nhà xuất bản thành công',
+        publishers,
+      );
     } catch (error) {
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -41,11 +50,6 @@ export class PublishersService {
         .data(publishers)
         .build();
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Danh sách nhả xuất bản')
-      .data(publishers)
-      .build();
   }
 
   async findOne(id: number) {
