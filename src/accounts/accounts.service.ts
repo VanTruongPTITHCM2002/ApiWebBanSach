@@ -26,11 +26,8 @@ export class AccountsService {
     const role = await this.roleRepository.findOne({
       where: { roleName: 'CUSTOMER' },
     });
-    if (!role) {
-      throw new NotFoundException('Role "CUSTOMER" not found');
-    }
+    if (!role) throw new NotFoundException('Role "CUSTOMER" not found');
 
-    // Tạo đối tượng account với vai trò "Customer"
     const account = this.accountRepository.create({
       ...rest,
       password: hashedPassword,
@@ -38,7 +35,6 @@ export class AccountsService {
       status: true,
     });
 
-    // Lưu tài khoản vào cơ sở dữ liệu
     return await this.accountRepository.save(account);
   }
 
@@ -51,7 +47,6 @@ export class AccountsService {
         skip: skip,
         take: take,
       });
-      this.logger.log('Lấy danh sách tài khoản thành công');
       return ApiRes.success(
         `Lấy danh sách tài khoản thành công ở trang ${page}`,
         {
@@ -68,8 +63,7 @@ export class AccountsService {
         },
       );
     } catch (error: any) {
-      this.logger.error(error.message);
-      return ApiRes.error('Đã có lỗi xảy ra...', 'Thất bại');
+      return ApiRes.error('Đã có lỗi xảy ra trong hệ thống');
     }
   }
 
@@ -78,33 +72,28 @@ export class AccountsService {
       const account = await this.accountRepository.findOne({
         where: { username: id },
       });
-      if (account === null) {
-        this.logger.error('Không tìm thấy tài khoản');
-        return ApiRes.notFound('Không tìm thấy tài khoản', 'Thất bại');
-      }
+      if (account === null)
+        return ApiRes.notFound(`Không tìm thấy tài khoản ${id}`);
+
       const response = new AccountResponse(
         account.username,
         convertStatus(account.status),
         account.createdAt.toLocaleString(),
       );
-      this.logger.log('Tạo tài khoản thành công');
-      return ApiRes.success('Thông tin tài khoản ' + id, response);
+      return ApiRes.success(`Thông tin tài khoản ${id}`, response);
     } catch (err: any) {
-      this.logger.error('Đã có lỗi xảy ra');
       console.log(err.message);
-      return ApiRes.internalServerError('Đã có lỗi xảy ra', 'Thất bại');
+      return ApiRes.internalServerError('Đã có lỗi xảy ra');
     }
   }
 
   async update(username: string, updateAccountDto: UpdateAccountDto) {
     try {
       await this.accountRepository.update(username, updateAccountDto);
-      this.logger.log('Cập nhật tài khoản thành công');
-      return ApiRes.success('Cập nhật tài khoản thành công', '');
+      return ApiRes.success('Cập nhật tài khoản thành công');
     } catch (err: any) {
-      this.logger.log('Đã có lỗi xảy ra');
       console.log(err.message);
-      return ApiRes.internalServerError('Đã có lỗi xảy ra', 'Thất bại');
+      return ApiRes.internalServerError('Đã có lỗi xảy ra trong hệ thống');
     }
   }
 
@@ -113,18 +102,14 @@ export class AccountsService {
       const account = await this.accountRepository.findOne({
         where: { username: username },
       });
-      if (!account) {
-        this.logger.error('Không tìm thấy tài khoản');
-        return ApiRes.notFound('Không tìm thấy tài khoản', 'Thất bại');
-      }
+      if (!account) return ApiRes.notFound('Không tìm thấy tài khoản');
+
       account.status = false;
       await this.accountRepository.save(account);
-      this.logger.log('Xóa tài khoản thành công');
-      return ApiRes.success('Xóa tài khoản thành công', '');
+      return ApiRes.success('Xóa tài khoản thành công');
     } catch (err: any) {
-      this.logger.error('Đã có lỗi xảy ra');
       console.log(err.message);
-      return ApiRes.internalServerError('Đã có lỗi xảy ra', 'Thất bại');
+      return ApiRes.internalServerError('Đã có lỗi xảy ra trong hệ thống');
     }
   }
 }

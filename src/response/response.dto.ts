@@ -6,33 +6,36 @@ export class ApiRes<T> {
     public error?: string | object,
   ) {}
 
-  static success<T>(message: string, data: T): ApiRes<T> {
+  static success<T>(message: string, data?: T): ApiRes<T> {
     return new ApiRes<T>(200, message, data);
   }
 
-  static error<T>(message: string, error: string | object): ApiRes<T> {
+  static error<T>(message: string, error: string = 'Thất bại'): ApiRes<T> {
     return new ApiRes<T>(400, message, undefined, error);
   }
 
-  static unauthorized<T>(message: string, error: string | object): ApiRes<T> {
+  static unauthorized<T>(
+    message: string,
+    error: string = 'Thất bại',
+  ): ApiRes<T> {
     return new ApiRes<T>(401, message, undefined, error);
   }
 
-  static forbidden<T>(message: string, error: string | object): ApiRes<T> {
+  static forbidden<T>(message: string, error: string = 'Thất bại'): ApiRes<T> {
     return new ApiRes<T>(403, message, undefined, error);
   }
 
-  static notFound<T>(message: string, error: string | object): ApiRes<T> {
+  static notFound<T>(message: string, error: string = 'Thất bại'): ApiRes<T> {
     return new ApiRes<T>(404, message, undefined, error);
   }
 
-  static conflict<T>(message: string, error: string | object): ApiRes<T> {
+  static conflict<T>(message: string, error: string = 'Thất bại'): ApiRes<T> {
     return new ApiRes<T>(409, message, undefined, error);
   }
 
   static internalServerError<T>(
     message: string,
-    error: string | object,
+    error: string = 'Thất bại',
   ): ApiRes<T> {
     return new ApiRes<T>(500, message, undefined, error);
   }

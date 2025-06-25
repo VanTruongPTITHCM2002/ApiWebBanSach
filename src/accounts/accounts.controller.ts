@@ -64,21 +64,6 @@ export class AccountsController {
     type: 'string',
     description: 'ID của tài khoản',
   })
-  // @ApiBody({
-  //   schema: {
-  //     type: 'object',
-  //     properties: {
-  //       username: {
-  //         type: 'string',
-  //         description: 'Tên đăng nhập',
-  //       },
-  //       password: {
-  //         type: 'string',
-  //         description: 'Mật khẩu',
-  //       },
-  //     },
-  //   },
-  // })
   @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
     return this.accountsService.update(id, updateAccountDto);
