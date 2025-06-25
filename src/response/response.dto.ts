@@ -40,11 +40,11 @@ export class ApiRes<T> {
     return new ApiRes<T>(500, message, undefined, error);
   }
 
-  static badRequest<T>(message: string, error: string | object): ApiRes<T> {
+  static badRequest<T>(message: string, error: string = 'Thất bại'): ApiRes<T> {
     return new ApiRes<T>(400, message, undefined, error);
   }
 
-  static created<T>(message: string, data: T): ApiRes<T> {
+  static created<T>(message: string, data?: T): ApiRes<T> {
     return new ApiRes<T>(201, message, data);
   }
 }

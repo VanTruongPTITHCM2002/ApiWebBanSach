@@ -27,45 +27,38 @@ export class AuthService {
         where: { username: signUpDto.username },
       });
 
-      if (account) {
-        this.log.error('Tài khoản đăng ký đã tồn tại trên hệ thống');
-        return ApiRes.badRequest(
-          `Tài khoản ${signUpDto.username} đã tồn tại`,
-          'Thất bại',
-        );
-      }
+      if (account)
+        return ApiRes.badRequest(`Tài khoản ${signUpDto.username} đã tồn tại`);
 
-      if (signUpDto.password !== signUpDto.repassword) {
-        this.log.error('Mật khẩu không trùng khớp');
-        return ApiRes.badRequest('Mật khẩu không trùng khớp', 'Thất bại');
-      }
+      if (signUpDto.password !== signUpDto.repassword)
+        return ApiRes.badRequest('Mật khẩu không trùng khớp');
+
+      const { username, password, firstname, lastname, email, address, phone } =
+        signUpDto;
+
       const newAccount = await this.accountService.create({
-        username: signUpDto.username,
-        password: signUpDto.password,
+        username,
+        password,
       });
 
       const informAccount = this.userService.create({
-        firstname: signUpDto.firstname,
-        lastname: signUpDto.lastname,
-        email: signUpDto.email,
-        address: signUpDto.address,
-        phone: signUpDto.phone,
+        firstname,
+        lastname,
+        email,
+        address,
+        phone,
         accountId: newAccount,
       });
 
-      if (!newAccount || !informAccount) {
-        return ApiRes.error('Không thể tạo tài khoản', 'Thất bại');
-      }
+      if (!newAccount || !informAccount)
+        return ApiRes.error('Không thể tạo tài khoản');
 
-      this.log.log('Tạo tài khoản thành công');
       return ApiRes.created(
         `Tài khoản ${signUpDto.username} đã được tạo thành công`,
-        null,
       );
     } catch (error: any) {
-      this.log.error('Đã có lỗi xảy ra khi tạo tài khoản');
       console.log(error.message);
-      return ApiRes.error('Đã có lỗi xảy ra', 'Thất bại');
+      return ApiRes.error('Đã có lỗi xảy ra');
     }
   }
 
@@ -78,32 +71,23 @@ export class AuthService {
         where: { username: username },
         relations: ['roleId'],
       });
-      if (!account) {
-        this.log.error(`Không tìm thấy tài khoản ${username}`);
-        return ApiRes.notFound(
-          `Không tìm thấy tài khoản ${username}`,
-          'Thất bại',
-        );
-      }
+      if (!account)
+        return ApiRes.notFound(`Không tìm thấy tài khoản ${username}`);
 
-      if (!account.status) {
+      if (!account.status)
         return ApiRes.forbidden('Bạn không thể đăng nhập', 'Thất bại');
-      }
 
       const isMatch = await bcrypt.compare(password, account.password);
-      if (!isMatch) {
-        throw new UnauthorizedException('Sai mật khẩu!');
-      }
+      if (!isMatch) throw new UnauthorizedException('Sai mật khẩu!');
+
       const response: AuthResponse = {
         access_token: await this.generateToken(account),
       };
       return ApiRes.success('Đăng nhập thành công', response);
     } catch (error: any) {
-      if (error instanceof UnauthorizedException) {
-        throw error; // bắt rồi ném lại
-      }
-      this.log.error('Đã có lỗi xảy ra');
-      return ApiRes.error('Đã có lỗi xảy ra', 'Thất bại');
+      if (error instanceof UnauthorizedException) throw error; // bắt rồi ném lại
+
+      return ApiRes.error('Đã có lỗi xảy ra trong hệ thống');
     }
   }
 
