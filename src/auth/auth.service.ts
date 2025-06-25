@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/accounts/entities/account.entity';
@@ -12,7 +12,6 @@ import { AuthResponse } from 'src/response/auth.response';
 
 @Injectable()
 export class AuthService {
-  private log: Logger = new Logger(AuthService.name);
   constructor(
     private readonly jwtService: JwtService,
     private readonly accountService: AccountsService,
