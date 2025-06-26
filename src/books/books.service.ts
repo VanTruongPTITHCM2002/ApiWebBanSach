@@ -42,14 +42,13 @@ export class BooksService {
           where: { categoryName: createBookDto.categoryName.toString() },
         }),
       ]);
-      if (!author || !publisher || !category) {
-        this.log.error(
+
+      if (!author || !publisher || !category)
+        return ApiRes.notFound(
           `Không tìm thấy: ${
             !author ? 'Tác giả ' : ''
           }${!publisher ? 'Nhà xuất bản ' : ''}${!category ? 'Thể loại ' : ''}`,
         );
-        return ApiRes.notFound('Dữ liệu không hợp lệ', 'Thất bại');
-      }
 
       const book = {
         title: createBookDto.title,
@@ -62,14 +61,11 @@ export class BooksService {
         status: true,
         image: file?.buffer,
       };
-
-      console.log(book);
       await this.bookRepository.save(book);
-      this.log.log('Thêm sách thành công');
-      return ApiRes.success('Thêm sách thành công', 'Thành công');
+      return ApiRes.success('Thêm sách thành công');
     } catch (error) {
-      this.log.error(error);
-      return ApiRes.error('Không thể thêm sách', 'Thất bại');
+      console.log(error.message);
+      return ApiRes.error('Không thể thêm sách');
     }
   }
 
@@ -78,6 +74,9 @@ export class BooksService {
       const books = await this.bookRepository.find({
         skip: (page - 1) * size,
         take: size,
+        where: {
+          isDeleted: false,
+        },
       });
       const booksWithBase64 = books.map((book) => {
         let imageBase64 = null;
@@ -92,11 +91,9 @@ export class BooksService {
         };
       });
 
-      this.log.log('Hiện danh sách sách thành công');
       return ApiRes.success('Hiện danh sách sách thành công', booksWithBase64);
     } catch (error) {
-      this.log.error('Không thể hiện danh sách sách');
-      return ApiRes.error('Không thể hiện danh sách sách', 'Thất bại');
+      return ApiRes.error('Không thể hiện danh sách sách');
     }
   }
 
@@ -205,16 +202,15 @@ export class BooksService {
         where: { bookid: id },
       });
       if (!book) {
-        this.log.error('Không tìm thấy sách');
-        return ApiRes.notFound('Không tìm thấy sách', 'Thất bại');
+        return ApiRes.notFound('Không tìm thấy sách');
       }
+
       book.isDeleted = true;
       await this.bookRepository.save(book);
-      this.log.log('Xóa sách thành công');
-      return ApiRes.success('Xóa sách thành công', 'Thành công');
+
+      return ApiRes.success('Xóa sách thành công');
     } catch (error) {
-      this.log.error('Không thể xóa sách');
-      return ApiRes.error('Không thể xóa sách', 'Thất bại');
+      return ApiRes.error('Không thể xóa sách');
     }
   }
 }
