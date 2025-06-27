@@ -187,12 +187,33 @@ export class BooksService {
 
   async update(id: number, updateBookDto: UpdateBookDto) {
     try {
-      await this.bookRepository.update(id, updateBookDto);
-      this.log.log('Cập nhật sách thành công');
-      return ApiRes.success('Cập nhật sách thành công', 'Thành công');
+      const [author, publisher, category] = await Promise.all([
+        this.authorRepository
+          .createQueryBuilder('author')
+          .where("CONCAT(author.firstname, ' ', author.lastname) = :fullname", {
+            fullname: updateBookDto.authorName,
+          })
+          .getOne(),
+        this.publisherRepository.findOne({
+          where: { publisherName: updateBookDto.publisherName.toString() },
+        }),
+        this.categoryRepository.findOne({
+          where: { categoryName: updateBookDto.categoryName.toString() },
+        }),
+      ]);
+
+      await this.bookRepository.update(id, {
+        title: updateBookDto.title,
+        authorId: { authorId: author.authorId },
+        category: { categoryId: category.categoryId },
+        publisherId: { publisherId: publisher.publisherId },
+        price: updateBookDto.price,
+        stock: updateBookDto.stock,
+      });
+      return ApiRes.success('Cập nhật sách thành công');
     } catch (error) {
-      this.log.error('Không thể cập nhật sách');
-      return ApiRes.error('Không thể cập nhật sách', 'Thất bại');
+      console.log(error.message);
+      return ApiRes.error('Không thể cập nhật sách');
     }
   }
 
