@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Account } from './entities/account.entity';
@@ -17,8 +17,6 @@ export class AccountsService {
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
   ) {}
-  private readonly logger = new Logger(AccountsService.name);
-
   async create(createAccountDto: CreateAccountDto): Promise<Account> {
     const { password, ...rest } = createAccountDto;
     const saltOrRounds = 10;

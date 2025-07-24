@@ -9,6 +9,7 @@ import { UsersService } from 'src/users/users.service';
 import { ApiRes } from 'src/response/response.dto';
 import { SignUpDto } from './dto/signup.dto';
 import { AuthResponse } from 'src/response/auth.response';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -64,6 +65,7 @@ export class AuthService {
   async postLogin(
     username: string,
     password: string,
+    res: Response,
   ): Promise<ApiRes<string | AuthResponse>> {
     try {
       const account = await this.accountRepository.findOne({
@@ -79,10 +81,16 @@ export class AuthService {
       const isMatch = await bcrypt.compare(password, account.password);
       if (!isMatch) throw new UnauthorizedException('Sai mật khẩu!');
 
-      const response: AuthResponse = {
-        access_token: await this.generateToken(account),
-      };
-      return ApiRes.success('Đăng nhập thành công', response);
+      const token = await this.generateToken(account);
+
+      res.cookie('access_token', token, {
+        httpOnly: true,
+        secure: false, // bật nếu dùng HTTPS
+        sameSite: 'lax', // hoặc 'Strict' hoặc 'None' nếu cần chia domain
+        maxAge: 60 * 60 * 1000,
+      });
+
+      return ApiRes.success('Đăng nhập thành công');
     } catch (error: any) {
       if (error instanceof UnauthorizedException) throw error; // bắt rồi ném lại
 
