@@ -22,4 +22,6 @@ export class CreateBookDto {
 
   @IsNotEmpty()
   stock: number;
+
+  link?: string;
 }
