@@ -16,7 +16,6 @@ import { AuthResponse } from 'src/response/auth.response';
 import { Response } from 'express';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 
-
 @Controller('auth')
 @ApiTags('Authentication')
 export class AuthController {
@@ -41,6 +40,12 @@ export class AuthController {
   @ApiCreatedResponse({ description: 'Đăng ký tài khoản' })
   async signup(@Body() signUpDto: SignUpDto): Promise<ApiRes<string>> {
     return this.authService.signup(signUpDto);
+  }
+
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) res: Response) {
+    const response = this.authService.logout(res);
+    return response;
   }
 
   @Get('status')

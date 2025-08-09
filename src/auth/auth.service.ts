@@ -98,6 +98,16 @@ export class AuthService {
     }
   }
 
+  async logout(res: Response) {
+    res.cookie('access_token', '', {
+      httpOnly: true,
+      secure: true, // bật nếu dùng HTTPS
+      sameSite: 'strict', // hoặc 'Strict' hoặc 'None' nếu cần chia domain
+      maxAge: 0,
+    });
+    return ApiRes.success('Đăng xuất thành công');
+  }
+
   async generateToken(account: Account): Promise<string> {
     const payload = { sub: account.username, role: account.roleId.roleName }; // 'sub' là một payload phổ biến trong JWT
     return this.jwtService.sign(payload);

@@ -3,7 +3,13 @@ import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from './entities/book.entity';
-import { ILike, Repository } from 'typeorm';
+import {
+  Between,
+  ILike,
+  LessThanOrEqual,
+  MoreThanOrEqual,
+  Repository,
+} from 'typeorm';
 import { Author } from 'src/authors/entities/author.entity';
 import { Publisher } from 'src/publishers/entities/publisher.entity';
 import { Category } from 'src/categories/entities/category.entity';
@@ -94,6 +100,54 @@ export class BooksService {
       return ApiRes.success('Hiện danh sách sách thành công', booksWithBase64);
     } catch (error) {
       return ApiRes.error('Không thể hiện danh sách sách');
+    }
+  }
+
+  async filter(
+    page: number,
+    size: number,
+    status: boolean | null,
+    minPrice: number | null,
+    maxPrice: number | null,
+  ) {
+    minPrice = isNaN(minPrice) ? null : minPrice;
+    maxPrice = isNaN(maxPrice) ? null : maxPrice;
+    const where: any = {
+      isDeleted: false,
+    };
+
+    if (status !== null) where.status = status;
+    where.price =
+      minPrice != null && maxPrice != null
+        ? Between(minPrice, maxPrice)
+        : minPrice !== null
+          ? MoreThanOrEqual(minPrice)
+          : maxPrice !== null
+            ? LessThanOrEqual(maxPrice)
+            : null;
+    try {
+      const books = await this.bookRepository.find({
+        skip: (page - 1) * size,
+        take: size,
+        where,
+      });
+
+      const booksWithBase64 = books.map((book) => {
+        let imageBase64 = null;
+
+        if (book.image && book.image instanceof Buffer) {
+          imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
+        }
+
+        return {
+          ...book,
+          imageBase64, // thêm thuộc tính mới
+        };
+      });
+
+      return ApiRes.success('Hiện danh sách sách thành công', booksWithBase64);
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -209,6 +263,7 @@ export class BooksService {
         publisherId: { publisherId: publisher.publisherId },
         price: updateBookDto.price,
         stock: updateBookDto.stock,
+        link: updateBookDto.link,
       });
       return ApiRes.success('Cập nhật sách thành công');
     } catch (error) {

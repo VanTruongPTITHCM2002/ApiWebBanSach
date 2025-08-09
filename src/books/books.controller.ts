@@ -59,6 +59,19 @@ export class BooksController {
     return this.booksService.findAll(page, size);
   }
 
+  @Get('/filter')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  filterBook(
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 5,
+    @Query('status') status: boolean = null,
+    @Query('minPrice') minPrice: number = null,
+    @Query('maxPrice') maxPrice: number = null,
+  ) {
+    return this.booksService.filter(page, size, status, minPrice, maxPrice);
+  }
+
   @Get('/buys')
   getBookByBuy() {
     return this.booksService.getBookByBuy();

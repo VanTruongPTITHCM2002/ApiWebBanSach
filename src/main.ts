@@ -5,10 +5,11 @@ import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { ApiExceptionFilter } from './common/filters/api.filter';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+  app.use(cookieParser());
   const configService = app.get(ConfigService);
   const PORT = configService.get<number>('PORT');
   app.enableCors({

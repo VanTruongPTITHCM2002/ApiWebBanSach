@@ -53,6 +53,6 @@ export class Book {
   @Column({ type: 'mediumblob', nullable: true })
   image: Buffer;
 
-  @Column()
+  @Column({ default: '' })
   link: string;
 }

@@ -12,6 +12,12 @@ export class Author {
   @Column({ length: 45 })
   lastname: string;
 
+  @Column()
+  country: string;
+
+  @Column()
+  quantity: number;
+
   @OneToMany(() => Book, (book) => book.authorId)
   books: Book[];
 }

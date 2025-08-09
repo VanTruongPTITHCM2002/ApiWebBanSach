@@ -10,4 +10,10 @@ export class CreateAuthorDto {
   @IsEmpty()
   @Length(1, 45)
   lastname: string;
+
+  @IsString()
+  @IsEmpty()
+  country: string;
+
+  quantity: number;
 }

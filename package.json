@@ -33,6 +33,7 @@
     "builder-pattern": "^2.2.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.11.0",
