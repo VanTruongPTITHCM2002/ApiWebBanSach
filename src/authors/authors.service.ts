@@ -26,7 +26,6 @@ export class AuthorsService {
 
       return ApiRes.created('Thêm tác giả thành công', authorName);
     } catch (error) {
-      console.log(error.message);
       return ApiRes.internalServerError('Thêm tác giả thất bại');
     }
   }
@@ -86,10 +85,19 @@ export class AuthorsService {
 
   async remove(id: number) {
     try {
+      const author = await this.authorRepository.findOne({
+        where: { authorId: id },
+      });
+
+      if (!author) return ApiRes.notFound('Không tìm thấy tác giả');
+
+      if (author.books?.length > 0) {
+        return ApiRes.badRequest('Không thể xóa tác giả');
+      }
+
       await this.authorRepository.delete(id);
       return ApiRes.success('Xóa tác giả thành công');
     } catch (error) {
-      console.log(error.message);
       return ApiRes.error('Không thể xóa tác giả');
     }
   }
