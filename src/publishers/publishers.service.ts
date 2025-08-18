@@ -16,19 +16,17 @@ export class PublishersService {
   ) {}
   async create(createPublisherDto: CreatePublisherDto) {
     try {
+      const publisher = await this.publisherRepository.findOne({
+        where: { publisherName: createPublisherDto.publisherName },
+      });
+
+      if (publisher) return ApiRes.badRequest('Nhà xuất bản đã tồn tại');
       await this.publisherRepository.save(createPublisherDto);
+      return ApiRes.created('Thêm nhà xuất bản thành công');
     } catch (error) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thực hiện thêm nhà xuất bản')
-        .data('')
-        .build();
+      console.error(error.message);
+      return ApiRes.internalServerError('Xảy ra lỗi trong quá trình thêm');
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.CREATED)
-      .message('Thêm nhà xuất bản thành công')
-      .data('')
-      .build();
   }
 
   async findAll(page: number, size: number) {
@@ -82,34 +80,32 @@ export class PublishersService {
   async update(id: number, updatePublisherDto: UpdatePublisherDto) {
     try {
       await this.publisherRepository.update(id, updatePublisherDto);
+      return ApiRes.success('Cập nhật thành công nhà xuất bản');
     } catch (error) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thực hiện cập nhật nhà xuất bản')
-        .data('')
-        .build();
+      console.error(error.message);
+      return ApiRes.internalServerError(
+        'Có lỗi xảy ra trong quá trình cập nhật',
+      );
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Cập nhật thành công nhà xuất bản')
-      .data('')
-      .build();
   }
 
   async remove(id: number) {
     try {
+      const publisher = await this.publisherRepository.findOne({
+        where: { publisherId: id },
+        relations: ['books'],
+      });
+
+      if (!publisher) return ApiRes.notFound('Không tìm thấy nhà xuất bản');
+
+      if (publisher.books?.length > 0)
+        return ApiRes.badRequest('Không thể xóa nhà xuất bản');
+
       await this.publisherRepository.delete(id);
+      return ApiRes.success('Xóa thành công nhà xuất bản');
     } catch (error) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thực hiện xóa nhà xuất bản')
-        .data('')
-        .build();
+      console.error(error.message);
+      return ApiRes.internalServerError('Có lỗi xảy ra trong quá trình xóa');
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Xóa thành công nhà xuất bản')
-      .data('')
-      .build();
   }
 }

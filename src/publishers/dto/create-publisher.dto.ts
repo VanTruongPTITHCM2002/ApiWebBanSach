@@ -1,13 +1,13 @@
-import { IsEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsString, Length } from 'class-validator';
 
 export class CreatePublisherDto {
   @IsString()
-  @IsEmpty()
+  @IsNotEmpty()
   @Length(5, 100)
   publisherName: string;
 
   @IsString()
-  @IsEmpty()
+  @IsNotEmpty()
   @Length(5, 255)
   publisherAddress: string;
 }
