@@ -112,10 +112,10 @@ export class OrderdetailService {
     }
   }
 
-  async findOne(userId: number) {
+  async findOne(orderId: number) {
     try {
       const orderDetail = await this.orderDetailRepository.find({
-        where: { orderId: { orderId: userId } },
+        where: { orderId: { orderId: orderId } },
       });
       return Builder<ApiResponse<Orderdetail[]>>()
         .statusCode(HttpStatus.OK)

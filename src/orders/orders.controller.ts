@@ -28,8 +28,8 @@ export class OrdersController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  findAll() {
-    return this.ordersService.findAll();
+  findAll(@Query('page') page: number = 1, @Query('size') size: number = 5) {
+    return this.ordersService.findAll(page, size);
   }
 
   @Get(':id(\\d+)')

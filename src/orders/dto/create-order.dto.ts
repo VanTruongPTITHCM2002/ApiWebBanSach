@@ -11,4 +11,6 @@ export class CreateOrderDto {
   @IsNumber()
   @IsNotEmpty()
   totalAmount: number;
+  @IsNotEmpty()
+  methodPay: string;
 }

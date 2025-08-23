@@ -28,5 +28,8 @@ export class Order {
   totalAmount: number;
 
   @Column()
-  status: number;
+  methodPay: string; //COD, BANKING
+
+  @Column()
+  status: number; // 0: Pending, 1: Completed, 2: Processing, 3: Shipping, -1: Cancel, 4: Refund
 }

@@ -13,6 +13,7 @@ import { Account } from 'src/accounts/entities/account.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Builder } from 'builder-pattern';
 import { ApiResponse } from 'src/response/apires';
+import { ApiRes } from 'src/response/response.dto';
 
 @Injectable()
 export class OrdersService {
@@ -71,19 +72,32 @@ export class OrdersService {
     }
   }
 
-  async findAll() {
+  async findAll(page: number, size: number) {
     try {
-      const orders = await this.orderRepository.find();
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Lấy thành công danh sách đơn hàng')
-        .data(orders)
-        .build();
-    } catch (error: unknown) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Có lỗi đã xảy ra..')
-        .build();
+      const skip = (page - 1) * size;
+      const take = size;
+      const orders = await this.orderRepository
+        .createQueryBuilder('order')
+        .leftJoin('order.userId', 'user')
+        .leftJoin('user.accountFK', 'account')
+        .select([
+          'order.orderId as orderId',
+          'order.totalAmount as totalAmount',
+          'order.orderDate as orderDate',
+          'order.status as status',
+          'order.methodPay as methodPay',
+          'account.username as username', // chỉ lấy username
+        ])
+        .addSelect("CONCAT(user.firstname, ' ', user.lastname)", 'fullName')
+        .skip(skip)
+        .take(take)
+        .getRawMany();
+      return ApiRes.success('Lấy thành công danh sách đơn hàng', orders);
+    } catch (error: any) {
+      console.error(error.message);
+      return ApiRes.internalServerError(
+        'Có lỗi xảy ra trong quá trình lấy đơn hàng...',
+      );
     }
   }
 
@@ -91,29 +105,26 @@ export class OrdersService {
     try {
       const order = await this.orderRepository.findOne({
         where: { orderId: id },
+        relations: ['orderdetails', 'orderdetails.books'],
       });
 
-      if (!order) {
-        throw new NotFoundException('Không tìm thấy đơn hàng có mã trên');
-      }
+      if (!order) return ApiRes.notFound('Không tìm thấy đơn hàng có mã trên');
 
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Tìm thấy thành công đơn hàng có mã ' + id)
-        .data(order)
-        .build();
+      return ApiRes.success('Tìm thấy thành công đơn hàng có mã ' + id, {
+        ...order,
+        orderdetails: order.orderdetails.map((d) => ({
+          orderdetailId: d.orderdetailId,
+          image: d.books.link,
+          quantity: d.quantity,
+          price: d.price,
+          title: d.books.title,
+        })),
+      });
     } catch (error: any) {
-      if (error instanceof NotFoundException) {
-        return Builder<ApiResponse<any>>()
-          .statusCode(HttpStatus.OK)
-          .message(error.message)
-          .build();
-      }
-
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Đã có lỗi xảy ra...')
-        .build();
+      console.error(error.message);
+      return ApiRes.internalServerError(
+        'Đã có lỗi xảy ra trong quá trình tìm đơn hàng..',
+      );
     }
   }
 
