@@ -43,6 +43,8 @@ export class OrdersController {
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.ordersService.update(+id, updateOrderDto);
   }

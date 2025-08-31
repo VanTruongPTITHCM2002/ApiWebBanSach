@@ -92,7 +92,10 @@ export class OrdersService {
         .skip(skip)
         .take(take)
         .getRawMany();
-      return ApiRes.success('Lấy thành công danh sách đơn hàng', orders);
+      return ApiRes.success(
+        'Lấy thành công danh sách đơn hàng',
+        orders.reverse(),
+      );
     } catch (error: any) {
       console.error(error.message);
       return ApiRes.internalServerError(
@@ -143,12 +146,10 @@ export class OrdersService {
         .createQueryBuilder('Order')
         .where('DATE(Order.orderDate) = :date', { date: formatDate })
         .getMany();
-
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Lấy thành công danh sách đơn hàng có ngày ' + orderDate)
-        .data(orders)
-        .build();
+      return ApiRes.success(
+        `Lấy thành công danh sách đơn hàng có ngày ${orderDate}`,
+        orders,
+      );
     } catch (error: any) {
       if (error instanceof BadRequestException) {
         return Builder<ApiResponse<any>>()
