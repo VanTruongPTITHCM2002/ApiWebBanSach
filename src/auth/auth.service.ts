@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from 'src/accounts/entities/account.entity';
@@ -79,7 +79,8 @@ export class AuthService {
         return ApiRes.forbidden('Bạn không thể đăng nhập', 'Thất bại');
 
       const isMatch = await bcrypt.compare(password, account.password);
-      if (!isMatch) throw new UnauthorizedException('Sai mật khẩu!');
+      if (!isMatch)
+        return ApiRes.unauthorized('Tài khoản hoặc mật khẩu không đúng');
 
       const token = await this.generateToken(account);
 
@@ -92,8 +93,6 @@ export class AuthService {
 
       return ApiRes.success('Đăng nhập thành công');
     } catch (error: any) {
-      if (error instanceof UnauthorizedException) throw error; // bắt rồi ném lại
-
       return ApiRes.error('Đã có lỗi xảy ra trong hệ thống');
     }
   }
