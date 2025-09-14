@@ -1,3 +1,4 @@
+import { Invoice } from 'src/invoice/entities/invoice.entity';
 import { Orderdetail } from 'src/orderdetail/entities/orderdetail.entity';
 import { User } from 'src/users/entities/user.entity';
 import {
@@ -20,6 +21,9 @@ export class Order {
 
   @OneToMany(() => Orderdetail, (orderDetail) => orderDetail.orderId)
   orderdetails: Orderdetail[];
+
+  @OneToMany(() => Invoice, (invoice) => invoice.order)
+  invoices: Invoice;
 
   @Column()
   orderDate: Date;

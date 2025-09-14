@@ -8,15 +8,15 @@ import {
   Delete,
 } from '@nestjs/common';
 import { InvoiceitemService } from './invoiceitem.service';
-import { CreateInvoiceitemDto } from './dto/create-invoiceitem.dto';
-import { UpdateInvoiceitemDto } from './dto/update-invoiceitem.dto';
+import { CreateInvoiceItemDto } from './dto/create-invoiceitem.dto';
+import { UpdateInvoiceItemDto } from './dto/update-invoiceitem.dto';
 
 @Controller('invoiceitem')
 export class InvoiceitemController {
   constructor(private readonly invoiceitemService: InvoiceitemService) {}
 
   @Post()
-  create(@Body() createInvoiceitemDto: CreateInvoiceitemDto) {
+  create(@Body() createInvoiceitemDto: CreateInvoiceItemDto) {
     return this.invoiceitemService.create(createInvoiceitemDto);
   }
 
@@ -33,7 +33,7 @@ export class InvoiceitemController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateInvoiceitemDto: UpdateInvoiceitemDto,
+    @Body() updateInvoiceitemDto: UpdateInvoiceItemDto,
   ) {
     return this.invoiceitemService.update(+id, updateInvoiceitemDto);
   }

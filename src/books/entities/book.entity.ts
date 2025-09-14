@@ -1,5 +1,6 @@
 import { Author } from 'src/authors/entities/author.entity';
 import { Category } from 'src/categories/entities/category.entity';
+import { InvoiceItem } from 'src/invoiceitem/entities/invoiceitem.entity';
 import { Orderdetail } from 'src/orderdetail/entities/orderdetail.entity';
 import { Publisher } from 'src/publishers/entities/publisher.entity';
 import { Review } from 'src/reviews/entities/review.entity';
@@ -37,6 +38,9 @@ export class Book {
 
   @OneToMany(() => Orderdetail, (orderDetail) => orderDetail.books)
   orderdetails: Orderdetail[];
+
+  @OneToMany(() => InvoiceItem, (invoiceItem) => invoiceItem.book)
+  invoiceItems: InvoiceItem[];
 
   @OneToMany(() => Review, (review) => review.books)
   reviewBook: Review[];

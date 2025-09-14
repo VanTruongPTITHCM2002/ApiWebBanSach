@@ -34,7 +34,7 @@ export class User {
   @Length(1, 11)
   phone: string;
 
-  @OneToOne(() => Account, (account) => account.accountId, { cascade: true })
+  @OneToOne(() => Account, (account) => account.user, { cascade: true })
   @JoinColumn({ name: 'accountId' })
   accountFK: Account;
 

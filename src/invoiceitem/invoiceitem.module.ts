@@ -3,7 +3,7 @@ import { InvoiceitemService } from './invoiceitem.service';
 import { InvoiceitemController } from './invoiceitem.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Invoice } from 'src/invoice/entities/invoice.entity';
-import { Invoiceitem } from './entities/invoiceitem.entity';
+import { InvoiceItem } from './entities/invoiceitem.entity';
 import { Order } from 'src/orders/entities/order.entity';
 import { Orderdetail } from 'src/orderdetail/entities/orderdetail.entity';
 import { User } from 'src/users/entities/user.entity';
@@ -12,7 +12,7 @@ import { Account } from 'src/accounts/entities/account.entity';
   imports: [
     TypeOrmModule.forFeature([
       Invoice,
-      Invoiceitem,
+      InvoiceItem,
       Order,
       Orderdetail,
       User,

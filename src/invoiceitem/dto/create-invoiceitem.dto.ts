@@ -1,6 +1,20 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, Min } from 'class-validator';
 
-export class CreateInvoiceitemDto {
-  @IsNotEmpty()
-  idOrder: number;
+export class CreateInvoiceItemDto {
+  @IsInt()
+  bookId: number;
+
+  @IsInt()
+  @Min(1)
+  quantity: number;
+
+  @IsNumber()
+  unitPrice: number;
+
+  @IsOptional()
+  @IsNumber()
+  discount?: number;
+
+  @IsNumber()
+  totalLine: number;
 }
