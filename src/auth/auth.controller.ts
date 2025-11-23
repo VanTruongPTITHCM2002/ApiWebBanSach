@@ -31,6 +31,7 @@ export class AuthController {
       loginDto.username,
       loginDto.password,
       res,
+      loginDto.rememberMe ?? false,
     );
 
     return response;
