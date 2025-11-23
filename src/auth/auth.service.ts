@@ -66,6 +66,7 @@ export class AuthService {
     username: string,
     password: string,
     res: Response,
+    rememberMe: boolean,
   ): Promise<ApiRes<string | AuthResponse>> {
     try {
       const account = await this.accountRepository.findOne({
@@ -86,9 +87,11 @@ export class AuthService {
 
       res.cookie('access_token', token, {
         httpOnly: true,
-        secure: false, // bật nếu dùng HTTPS
-        sameSite: 'lax', // hoặc 'Strict' hoặc 'None' nếu cần chia domain
-        maxAge: 60 * 60 * 1000,
+        secure: false,
+        sameSite: 'lax',
+        maxAge: rememberMe
+          ? 30 * 24 * 60 * 60 * 1000 // 30 ngày
+          : undefined, // session cookie, tắt tab là mất
       });
 
       return ApiRes.success('Đăng nhập thành công');
