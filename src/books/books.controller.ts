@@ -28,6 +28,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { BaseFilterDto } from 'src/request/base-filter.dto';
 @Controller('books')
 @ApiTags('books')
 export class BooksController {
@@ -56,7 +57,21 @@ export class BooksController {
     description: 'Lấy danh sách sách thành công',
   })
   findAll(@Query('page') page: number = 1, @Query('size') size: number = 5) {
-    return this.booksService.findAll(page, size);
+    return this.booksService.findWithoutFilter(page, size);
+  }
+
+  @Get('/all')
+  @ApiOkResponse({ description: 'Lấy danh sách sách thành công' })
+  async findAllWithBase64(@Query() query: BaseFilterDto) {
+    query.page = Number(query.page) || 1;
+    query.size = Number(query.size) || 5;
+
+    // parse filter JSON string
+    if (query.filter && typeof query.filter === 'string') {
+      query.filter = JSON.parse(query.filter);
+    }
+
+    return this.booksService.findAllWithBase64(query);
   }
 
   @Get('/filter')
