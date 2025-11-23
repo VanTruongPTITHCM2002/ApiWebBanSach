@@ -14,9 +14,11 @@ import { Author } from 'src/authors/entities/author.entity';
 import { Publisher } from 'src/publishers/entities/publisher.entity';
 import { Category } from 'src/categories/entities/category.entity';
 import { ApiRes } from 'src/response/response.dto';
+import { BaseService } from 'src/common/services/base.service';
+import { BaseFilterDto } from 'src/request/base-filter.dto';
 
 @Injectable()
-export class BooksService {
+export class BooksService extends BaseService<Book> {
   private log: Logger = new Logger(BooksService.name);
   constructor(
     @InjectRepository(Book)
@@ -30,7 +32,9 @@ export class BooksService {
 
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) {}
+  ) {
+    super(bookRepository, 'book');
+  }
 
   async create(createBookDto: CreateBookDto, file: Express.Multer.File) {
     try {
@@ -75,7 +79,7 @@ export class BooksService {
     }
   }
 
-  async findAll(page: number, size: number) {
+  async findWithoutFilter(page: number, size: number) {
     try {
       const books = await this.bookRepository.find({
         skip: (page - 1) * size,
@@ -101,6 +105,28 @@ export class BooksService {
     } catch (error) {
       return ApiRes.error('Không thể hiện danh sách sách');
     }
+  }
+
+  // book.service.ts
+  async findAllWithBase64(query: BaseFilterDto): Promise<ApiRes<any>> {
+    const paginated = await super.findAll(query);
+
+    // convert image sang base64
+    const paginatedWithBase64 = {
+      ...paginated,
+      items: paginated.items.map((book) => {
+        let imageBase64 = null;
+        if (book.image && book.image instanceof Buffer) {
+          imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
+        }
+        return { ...book, imageBase64 };
+      }),
+    };
+
+    return ApiRes.success(
+      'Hiện danh sách sách thành công',
+      paginatedWithBase64,
+    );
   }
 
   async filter(
