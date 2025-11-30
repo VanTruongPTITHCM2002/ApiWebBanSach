@@ -89,9 +89,7 @@ export class AuthService {
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
-        maxAge: rememberMe
-          ? 30 * 24 * 60 * 60 * 1000 // 30 ngày
-          : undefined, // session cookie, tắt tab là mất
+        maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : undefined,
       });
 
       return ApiRes.success('Đăng nhập thành công');
