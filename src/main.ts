@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { BadRequestException, HttpStatus, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { ApiExceptionFilter } from './common/filters/api.filter';
+// import { ApiExceptionFilter } from './common/filters/api.filter';
 import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
@@ -19,17 +19,25 @@ async function bootstrap() {
 });
 app.useGlobalPipes(
   new ValidationPipe({
-    transform: true, // Quan trọng! Bật transform để DTO hoạt động
+    transform: true,
     whitelist: true,
     forbidNonWhitelisted: true,
      exceptionFactory: (errors) => {
-      console.error('Validation errors:', errors); // 👈 log ra lỗi
-      return new BadRequestException(errors);
+        const formattedErrors = errors.reduce((acc, error) => {
+          acc[error.property] = Object.values(error.constraints)[0];
+          return acc;
+        },{});
+
+      return new BadRequestException({
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'Validation failed',
+        errors: formattedErrors
+      });
     },
   }),
 );
 
-app.useGlobalFilters(new ApiExceptionFilter());
+// app.useGlobalFilters(new ApiExceptionFilter());
 const config = new DocumentBuilder()
 .setTitle('Bookshop API')
 .setDescription('The API Bookshop description')
