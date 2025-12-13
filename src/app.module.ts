@@ -24,8 +24,8 @@ import { ormConfig } from './config/ormconfig';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      ...ormConfig,
+    TypeOrmModule.forRootAsync({
+      useFactory: async () => ormConfig,
     }),
     EmployeesModule,
     UsersModule,
