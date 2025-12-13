@@ -1,3 +1,4 @@
+import { join } from 'path';
 import {
   DATABASE_HOST,
   DATABASE_NAME,
@@ -15,6 +16,6 @@ export const ormConfig: MysqlConnectionOptions = {
   host: DATABASE_HOST,
   port: +DATABASE_PORT,
   password: DATABASE_PASSWORD,
-  entities: ['dist/**/*.entity{.ts,.js}'],
+  entities: [join(__dirname, '..', '**', '*.entity.{ts,js}')],
   synchronize: true,
 };
