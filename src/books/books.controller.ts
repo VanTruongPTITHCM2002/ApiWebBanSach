@@ -11,6 +11,8 @@ import {
   Query,
   UseInterceptors,
   UploadedFile,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -29,7 +31,7 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BaseFilterDto } from 'src/request/base-filter.dto';
-@Controller('books')
+@Controller('/api/v1/books')
 @ApiTags('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}
@@ -45,6 +47,7 @@ export class BooksController {
     type: CreateBookDto,
   })
   @UseInterceptors(FileInterceptor('image'))
+  @HttpCode(HttpStatus.CREATED)
   create(
     @Body() createBookDto: CreateBookDto,
     @UploadedFile() file: Express.Multer.File,
@@ -56,8 +59,11 @@ export class BooksController {
   @ApiOkResponse({
     description: 'Lấy danh sách sách thành công',
   })
-  findAll(@Query('page') page: number = 1, @Query('size') size: number = 5) {
-    return this.booksService.findWithoutFilter(page, size);
+  findAll(
+    @Query('page') page: string = '1',
+    @Query('size') size: string = '5',
+  ) {
+    return this.booksService.findWithoutFilter(Number(page), Number(size));
   }
 
   @Get('/all')
@@ -80,11 +86,11 @@ export class BooksController {
   filterBook(
     @Query('page') page: number = 1,
     @Query('size') size: number = 5,
-    @Query('status') status: boolean = null,
-    @Query('minPrice') minPrice: number = null,
-    @Query('maxPrice') maxPrice: number = null,
+    @Query() query: any,
   ) {
-    return this.booksService.filter(page, size, status, minPrice, maxPrice);
+    const { page: _p, size: _s, ...filters } = query;
+    console.log(_p, _s);
+    return this.booksService.filter(page, size, filters);
   }
 
   @Get('/buys')

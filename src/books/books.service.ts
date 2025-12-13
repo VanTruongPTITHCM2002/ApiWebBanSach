@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -81,13 +81,16 @@ export class BooksService extends BaseService<Book> {
 
   async findWithoutFilter(page: number, size: number) {
     try {
-      const books = await this.bookRepository.find({
+      const [books, totalElements] = await this.bookRepository.findAndCount({
         skip: (page - 1) * size,
         take: size,
         where: {
           isDeleted: false,
         },
+        relations: ['authorId', 'category', 'publisherId'],
       });
+
+      const totalPages = Math.ceil(totalElements / size);
       const booksWithBase64 = books.map((book) => {
         let imageBase64 = null;
 
@@ -96,14 +99,36 @@ export class BooksService extends BaseService<Book> {
         }
 
         return {
-          ...book,
-          imageBase64, // thêm thuộc tính mới
+          bookid: book.bookid,
+          title: book.title,
+          isDeleted: book.isDeleted,
+          price: book.price,
+          stock: book.stock,
+          status: book.status,
+          imageBase64,
+          link: book.link,
+          authorName: `${book.authorId.firstname} ${book.authorId.lastname}`,
+          categoryName: book.category.categoryName,
+          publisherName: book.publisherId.publisherName,
         };
       });
 
-      return ApiRes.success('Hiện danh sách sách thành công', booksWithBase64);
+      return ApiRes.success('Hiện danh sách sách thành công', {
+        content: booksWithBase64,
+        page,
+        size,
+        totalElements,
+        totalPages,
+        first: page === 1,
+        last: page >= totalPages,
+      });
     } catch (error) {
-      return ApiRes.error('Không thể hiện danh sách sách');
+      console.error(error.message);
+      throw new HttpException(
+        'Không thể hiện danh sách sách',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+      // return ApiRes.internalServerError('Không thể hiện danh sách sách');
     }
   }
 
@@ -119,7 +144,13 @@ export class BooksService extends BaseService<Book> {
         if (book.image && book.image instanceof Buffer) {
           imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
         }
-        return { ...book, imageBase64 };
+        return {
+          ...book,
+          authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
+          categoryName: book.category.categoryName,
+          publisherName: book.publisherId.publisherName,
+          imageBase64,
+        };
       }),
     };
 
@@ -129,34 +160,58 @@ export class BooksService extends BaseService<Book> {
     );
   }
 
-  async filter(
-    page: number,
-    size: number,
-    status: boolean | null,
-    minPrice: number | null,
-    maxPrice: number | null,
-  ) {
-    minPrice = isNaN(minPrice) ? null : minPrice;
-    maxPrice = isNaN(maxPrice) ? null : maxPrice;
-    const where: any = {
-      isDeleted: false,
-    };
-
-    if (status !== null) where.status = status;
-    where.price =
-      minPrice != null && maxPrice != null
-        ? Between(minPrice, maxPrice)
-        : minPrice !== null
-          ? MoreThanOrEqual(minPrice)
-          : maxPrice !== null
-            ? LessThanOrEqual(maxPrice)
-            : null;
+  async filter(page: number, size: number, filters: any) {
     try {
-      const books = await this.bookRepository.find({
+      page = Number(page);
+      size = Number(size);
+
+      const where: any = { isDeleted: false };
+
+      if (filters) {
+        const status =
+          filters.status !== undefined && filters.status !== ''
+            ? filters.status === 'true' || filters.status === true
+            : null;
+        const minPrice = filters.minPrice ? Number(filters.minPrice) : null;
+        const maxPrice = filters.maxPrice ? Number(filters.maxPrice) : null;
+
+        if (filters.title) {
+          where.title = ILike(`%${filters.title}%`);
+        }
+
+        if (status !== null) {
+          where.status = status;
+        }
+
+        if (minPrice != null && maxPrice != null) {
+          where.price = Between(minPrice, maxPrice);
+        } else if (minPrice != null) {
+          where.price = MoreThanOrEqual(minPrice);
+        } else if (maxPrice != null) {
+          where.price = LessThanOrEqual(maxPrice);
+        }
+
+        if (filters.categoryId) {
+          where.category = { categoryId: Number(filters.categoryId) };
+        }
+
+        if (filters.authorId) {
+          where.authorId = { authorId: Number(filters.authorId) };
+        }
+
+        if (filters.publisherId) {
+          where.publisherId = { publisherId: Number(filters.publisherId) };
+        }
+      }
+
+      const [books, totalElements] = await this.bookRepository.findAndCount({
         skip: (page - 1) * size,
         take: size,
         where,
+        relations: ['authorId', 'category', 'publisherId'],
       });
+
+      const totalPages = Math.ceil(totalElements / size);
 
       const booksWithBase64 = books.map((book) => {
         let imageBase64 = null;
@@ -166,14 +221,36 @@ export class BooksService extends BaseService<Book> {
         }
 
         return {
-          ...book,
-          imageBase64, // thêm thuộc tính mới
+          bookid: book.bookid,
+          title: book.title,
+          isDeleted: book.isDeleted,
+          price: book.price,
+          stock: book.stock,
+          status: book.status,
+          imageBase64,
+          link: book.link,
+          authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
+          categoryName: book.category.categoryName,
+          publisherName: book.publisherId.publisherName,
         };
       });
 
-      return ApiRes.success('Hiện danh sách sách thành công', booksWithBase64);
+      return ApiRes.success('Hiện danh sách sách thành công', {
+        content: booksWithBase64,
+        page,
+        size,
+        totalElements,
+        totalPages,
+        first: page === 1,
+        last: page >= totalPages,
+        filters,
+      });
     } catch (error) {
       console.log(error);
+      throw new HttpException(
+        'Không thể hiện danh sách sách',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -192,15 +269,16 @@ export class BooksService extends BaseService<Book> {
           ? `data:image/jpeg;base64,${book.image.toString('base64')}`
           : null,
       };
-      this.log.log('Hiện thông tin sách thành công');
       return ApiRes.success(
         'Hiện thông tin sách thành công',
         bookWithImageBase64,
       );
     } catch (error) {
       console.log(error.message);
-      this.log.error('Không thể hiện thông tin sách');
-      return ApiRes.error('Không thể hiện thông tin sách', 'Thất bại');
+      throw new HttpException(
+        'Không thể hiện thông tin của sách',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
