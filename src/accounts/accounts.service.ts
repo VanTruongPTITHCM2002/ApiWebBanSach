@@ -5,10 +5,11 @@ import { Account } from './entities/account.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { Role } from 'src/roles/entities/role.entity';
+import { Role } from '@/roles/entities/role.entity';
 import { AccountResponse } from './dto/accountResponse';
-import { convertStatus } from 'src/utils/convertStatusAccount';
-import { ApiRes } from 'src/response/response.dto';
+import { convertStatus } from '@/utils/convertStatusAccount';
+import { ApiRes } from '@/response/response.dto';
+
 @Injectable()
 export class AccountsService {
   constructor(
