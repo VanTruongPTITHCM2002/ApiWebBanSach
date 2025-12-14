@@ -12,9 +12,7 @@ import {
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
-import { Roles } from 'src/common/decorators/role.decorators';
+
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -22,6 +20,9 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@/common/guards/jwt.guard';
+import { RolesGuard } from '@/common/guards/role.guard';
+import { Roles } from '@/common/decorators/role.decorators';
 
 @Controller('accounts')
 @ApiTags('accounts')
