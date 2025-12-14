@@ -4,9 +4,9 @@ import { UpdateOrderDto } from './dto/update-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
-import { Account } from 'src/accounts/entities/account.entity';
-import { User } from 'src/users/entities/user.entity';
-import { ApiRes } from 'src/response/response.dto';
+import { Account } from '@/accounts/entities/account.entity';
+import { User } from '@/users/entities/user.entity';
+import { ApiRes } from '@/response/response.dto';
 
 @Injectable()
 export class OrdersService {

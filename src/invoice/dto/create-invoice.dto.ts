@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { PaymentMethod, PaymentStatus } from '../entities/invoice.entity';
 import { Type } from 'class-transformer';
-import { CreateInvoiceItemDto } from 'src/invoiceitem/dto/create-invoiceitem.dto';
+import { CreateInvoiceItemDto } from '@/invoiceitem/dto/create-invoiceitem.dto';
 
 export class CreateInvoiceDto {
   @IsInt()

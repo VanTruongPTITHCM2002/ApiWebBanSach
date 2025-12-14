@@ -1,6 +1,4 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { CreateBookDto } from './dto/create-book.dto';
-import { UpdateBookDto } from './dto/update-book.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from './entities/book.entity';
 import {
@@ -10,12 +8,16 @@ import {
   MoreThanOrEqual,
   Repository,
 } from 'typeorm';
-import { Author } from 'src/authors/entities/author.entity';
-import { Publisher } from 'src/publishers/entities/publisher.entity';
-import { Category } from 'src/categories/entities/category.entity';
-import { ApiRes } from 'src/response/response.dto';
-import { BaseService } from 'src/common/services/base.service';
-import { BaseFilterDto } from 'src/request/base-filter.dto';
+
+import { FilterBookQueryDto } from './dto/filter-book-query.dto';
+import { Author } from '@/authors/entities/author.entity';
+import { Publisher } from '@/publishers/entities/publisher.entity';
+import { Category } from '@/categories/entities/category.entity';
+import { BaseService } from '@/common/services/base.service';
+import { ApiRes } from '@/response/response.dto';
+import { BaseFilterDto } from '@/request/base-filter.dto';
+import { CreateBookDto } from './dto/create-book.dto';
+import { UpdateBookDto } from './dto/update-book.dto';
 
 @Injectable()
 export class BooksService extends BaseService<Book> {
@@ -160,7 +162,7 @@ export class BooksService extends BaseService<Book> {
     );
   }
 
-  async filter(page: number, size: number, filters: any) {
+  async filter(page: number, size: number, filters: FilterBookQueryDto) {
     try {
       page = Number(page);
       size = Number(size);

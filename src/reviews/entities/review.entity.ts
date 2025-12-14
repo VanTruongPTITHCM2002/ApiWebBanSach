@@ -1,5 +1,5 @@
-import { Account } from 'src/accounts/entities/account.entity';
-import { Book } from 'src/books/entities/book.entity';
+import { Account } from '@/accounts/entities/account.entity';
+import { Book } from '@/books/entities/book.entity';
 import {
   Column,
   Entity,

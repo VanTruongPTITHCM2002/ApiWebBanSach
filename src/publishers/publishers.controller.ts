@@ -12,10 +12,10 @@ import {
 import { PublishersService } from './publishers.service';
 import { CreatePublisherDto } from './dto/create-publisher.dto';
 import { UpdatePublisherDto } from './dto/update-publisher.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
-import { Roles } from 'src/common/decorators/role.decorators';
 import { ApiTags } from '@nestjs/swagger';
+import { RolesGuard } from '@/common/guards/role.guard';
+import { JwtAuthGuard } from '@/common/guards/jwt.guard';
+import { Roles } from '@/common/decorators/role.decorators';
 
 @Controller('publishers')
 @ApiTags('publishers')

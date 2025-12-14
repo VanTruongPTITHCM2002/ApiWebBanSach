@@ -4,7 +4,7 @@ import { UpdateAuthorDto } from './dto/update-author.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Author } from './entities/author.entity';
 import { Repository } from 'typeorm';
-import { ApiRes } from 'src/response/response.dto';
+import { ApiRes } from '@/response/response.dto';
 
 @Injectable()
 export class AuthorsService {

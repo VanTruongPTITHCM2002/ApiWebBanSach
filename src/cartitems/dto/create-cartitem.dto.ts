@@ -1,3 +1,4 @@
+import { CreateCartDto } from '@/carts/dto/create-cart.dto';
 import { Type } from 'class-transformer';
 import {
   IsNotEmpty,
@@ -5,11 +6,10 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { CreateCartDto } from 'src/carts/dto/create-cart.dto';
 
 export class CreateCartitemDto {
-  @ValidateNested() // Đảm bảo DTO lồng nhau được validate
-  @Type(() => CreateCartDto) // Cần có @Type() để transform đúng
+  @ValidateNested()
+  @Type(() => CreateCartDto)
   cartDto: CreateCartDto;
 
   @IsString()

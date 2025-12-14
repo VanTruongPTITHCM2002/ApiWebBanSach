@@ -2,7 +2,7 @@ import { Repository, SelectQueryBuilder } from 'typeorm';
 
 import { paginateQuery } from '../helpers/paginate.helper';
 import { applyFilter, applySort } from '../helpers/filter.helper';
-import { BaseFilterDto } from 'src/request/base-filter.dto';
+import { BaseFilterDto } from '@/request/base-filter.dto';
 
 export class BaseService<T> {
   constructor(

@@ -13,7 +13,10 @@ export class JwtAuthGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = request.cookies?.access_token;
-    if (!token) throw new UnauthorizedException('Token không được cung cấp');
+    if (!token) {
+      console.error('Token chưa được cung cấp');
+      throw new UnauthorizedException('Vui lòng đăng nhập trước khi yêu cầu');
+    }
 
     try {
       // Xác thực token

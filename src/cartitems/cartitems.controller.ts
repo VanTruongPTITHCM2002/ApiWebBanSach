@@ -11,9 +11,9 @@ import {
 import { CartitemsService } from './cartitems.service';
 import { CreateCartitemDto } from './dto/create-cartitem.dto';
 import { UpdateCartitemDto } from './dto/update-cartitem.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
-import { Roles } from 'src/common/decorators/role.decorators';
+import { JwtAuthGuard } from '@/common/guards/jwt.guard';
+import { RolesGuard } from '@/common/guards/role.guard';
+import { Roles } from '@/common/decorators/role.decorators';
 
 @Controller('cartitems')
 export class CartitemsController {

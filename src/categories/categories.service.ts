@@ -9,8 +9,8 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
 import { Repository } from 'typeorm';
-import { ApiRes } from 'src/response/response.dto';
-import { Book } from 'src/books/entities/book.entity';
+import { Book } from '@/books/entities/book.entity';
+import { ApiRes } from '@/response/response.dto';
 
 @Injectable()
 export class CategoriesService {

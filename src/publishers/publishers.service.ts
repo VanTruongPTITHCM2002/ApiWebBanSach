@@ -5,8 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Publisher } from './entities/publisher.entity';
 import { Repository } from 'typeorm';
 import { Builder } from 'builder-pattern';
-import { ApiResponse } from 'src/response/apires';
-import { ApiRes } from 'src/response/response.dto';
+import { ApiRes } from '@/response/response.dto';
+import { ApiResponse } from '@/response/apires';
 
 @Injectable()
 export class PublishersService {

@@ -1,6 +1,6 @@
-import { Review } from 'src/reviews/entities/review.entity';
-import { Role } from 'src/roles/entities/role.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Review } from '@/reviews/entities/review.entity';
+import { Role } from '@/roles/entities/role.entity';
+import { User } from '@/users/entities/user.entity';
 import {
   Column,
   CreateDateColumn,

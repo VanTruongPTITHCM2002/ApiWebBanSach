@@ -1,5 +1,5 @@
-import { Cartitem } from 'src/cartitems/entities/cartitem.entity';
-import { User } from 'src/users/entities/user.entity';
+import { Cartitem } from '@/cartitems/entities/cartitem.entity';
+import { User } from '@/users/entities/user.entity';
 import {
   Column,
   Entity,

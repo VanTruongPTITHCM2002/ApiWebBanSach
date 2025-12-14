@@ -4,10 +4,10 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Invoice, PaymentStatus } from './entities/invoice.entity';
-import { User } from 'src/users/entities/user.entity';
-import { ApiRes } from 'src/response/response.dto';
-import { InvoiceItem } from 'src/invoiceitem/entities/invoiceitem.entity';
-import { Order } from 'src/orders/entities/order.entity';
+import { User } from '@/users/entities/user.entity';
+import { InvoiceItem } from '@/invoiceitem/entities/invoiceitem.entity';
+import { Order } from '@/orders/entities/order.entity';
+import { ApiRes } from '@/response/response.dto';
 
 @Injectable()
 export class InvoiceService {

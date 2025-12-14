@@ -6,8 +6,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cart } from './entities/cart.entity';
 import { Builder } from 'builder-pattern';
-import { User } from 'src/users/entities/user.entity';
-import { Account } from 'src/accounts/entities/account.entity';
+import { Account } from '@/accounts/entities/account.entity';
+import { User } from '@/users/entities/user.entity';
 
 @Injectable()
 export class CartsService {

@@ -4,14 +4,14 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './auth.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Account } from 'src/accounts/entities/account.entity';
-import { AccountsService } from 'src/accounts/accounts.service';
 
-import { Role } from 'src/roles/entities/role.entity';
-import { User } from 'src/users/entities/user.entity';
-import { UsersService } from 'src/users/users.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
+import { Account } from '@/accounts/entities/account.entity';
+import { Role } from '@/roles/entities/role.entity';
+import { User } from '@/users/entities/user.entity';
+import { AccountsService } from '@/accounts/accounts.service';
+import { UsersService } from '@/users/users.service';
 
 @Module({
   imports: [

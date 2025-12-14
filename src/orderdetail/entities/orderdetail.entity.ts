@@ -1,5 +1,5 @@
-import { Book } from 'src/books/entities/book.entity';
-import { Order } from 'src/orders/entities/order.entity';
+import { Book } from '@/books/entities/book.entity';
+import { Order } from '@/orders/entities/order.entity';
 import { Column, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Entity } from 'typeorm/decorator/entity/Entity';
 

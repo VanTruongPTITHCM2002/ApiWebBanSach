@@ -12,9 +12,9 @@ import {
 import { InvoiceService } from './invoice.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
-import { Roles } from 'src/common/decorators/role.decorators';
+import { JwtAuthGuard } from '@/common/guards/jwt.guard';
+import { Roles } from '@/common/decorators/role.decorators';
+import { RolesGuard } from '@/common/guards/role.guard';
 
 @Controller('invoice')
 export class InvoiceController {

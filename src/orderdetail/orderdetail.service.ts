@@ -4,14 +4,14 @@ import { UpdateOrderdetailDto } from './dto/update-orderdetail.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Orderdetail } from './entities/orderdetail.entity';
-import { Account } from 'src/accounts/entities/account.entity';
-import { Cartitem } from 'src/cartitems/entities/cartitem.entity';
-import { Order } from 'src/orders/entities/order.entity';
-import { User } from 'src/users/entities/user.entity';
-import { Cart } from 'src/carts/entities/cart.entity';
-import { Book } from 'src/books/entities/book.entity';
 import { Builder } from 'builder-pattern';
-import { ApiResponse } from 'src/response/apires';
+import { Order } from '@/orders/entities/order.entity';
+import { User } from '@/users/entities/user.entity';
+import { Cart } from '@/carts/entities/cart.entity';
+import { Account } from '@/accounts/entities/account.entity';
+import { Book } from '@/books/entities/book.entity';
+import { Cartitem } from '@/cartitems/entities/cartitem.entity';
+import { ApiResponse } from '@/response/apires';
 
 @Injectable()
 export class OrderdetailService {

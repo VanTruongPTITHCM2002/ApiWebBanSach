@@ -1,3 +1,4 @@
+import { ApiRes } from '@/response/response.dto';
 import {
   ExceptionFilter,
   Catch,
@@ -6,7 +7,6 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiRes } from 'src/response/response.dto';
 // đường dẫn đến class ApiRes của bạn
 
 @Catch(HttpException)

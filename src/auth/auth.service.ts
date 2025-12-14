@@ -1,15 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Account } from 'src/accounts/entities/account.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { AccountsService } from 'src/accounts/accounts.service';
-import { UsersService } from 'src/users/users.service';
-import { ApiRes } from 'src/response/response.dto';
 import { SignUpDto } from './dto/signup.dto';
-import { AuthResponse } from 'src/response/auth.response';
+
 import { Response } from 'express';
+import { AccountsService } from '@/accounts/accounts.service';
+import { UsersService } from '@/users/users.service';
+import { Account } from '@/accounts/entities/account.entity';
+import { ApiRes } from '@/response/response.dto';
+import { AuthResponse } from '@/response/auth.response';
 
 @Injectable()
 export class AuthService {

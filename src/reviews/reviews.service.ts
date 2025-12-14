@@ -4,10 +4,10 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { Book } from 'src/books/entities/book.entity';
-import { Account } from 'src/accounts/entities/account.entity';
-import { ApiRes } from 'src/response/response.dto';
 import { Review } from './entities/review.entity';
+import { Book } from '@/books/entities/book.entity';
+import { Account } from '@/accounts/entities/account.entity';
+import { ApiRes } from '@/response/response.dto';
 
 @Injectable()
 export class ReviewsService {

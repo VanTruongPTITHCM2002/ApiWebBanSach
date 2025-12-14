@@ -31,6 +31,7 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BaseFilterDto } from 'src/request/base-filter.dto';
+import { FilterBookQueryDto } from './dto/filter-book-query.dto';
 @Controller('/api/v1/books')
 @ApiTags('books')
 export class BooksController {
@@ -72,7 +73,6 @@ export class BooksController {
     query.page = Number(query.page) || 1;
     query.size = Number(query.size) || 5;
 
-    // parse filter JSON string
     if (query.filter && typeof query.filter === 'string') {
       query.filter = JSON.parse(query.filter);
     }
@@ -84,10 +84,11 @@ export class BooksController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @ApiOkResponse({ description: 'Lấy danh sách có bộ lọc thành công' })
+  @ApiBearerAuth()
   filterBook(
     @Query('page') page: number = 1,
     @Query('size') size: number = 5,
-    @Query() query: any,
+    @Query() query: FilterBookQueryDto,
   ) {
     const { page: _p, size: _s, ...filters } = query;
     console.log(_p, _s);

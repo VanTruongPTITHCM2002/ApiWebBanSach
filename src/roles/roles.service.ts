@@ -9,7 +9,7 @@ import { Role } from './entities/role.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Builder } from 'builder-pattern';
-import { ApiResponse } from 'src/response/apires';
+import { ApiResponse } from '@/response/apires';
 
 @Injectable()
 export class RolesService {

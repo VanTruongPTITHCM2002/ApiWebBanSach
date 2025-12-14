@@ -1,6 +1,6 @@
-import { InvoiceItem } from 'src/invoiceitem/entities/invoiceitem.entity';
-import { Order } from 'src/orders/entities/order.entity';
-import { User } from 'src/users/entities/user.entity';
+import { InvoiceItem } from '@/invoiceitem/entities/invoiceitem.entity';
+import { Order } from '@/orders/entities/order.entity';
+import { User } from '@/users/entities/user.entity';
 import {
   Column,
   Entity,

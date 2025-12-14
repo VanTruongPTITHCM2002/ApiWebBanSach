@@ -10,11 +10,11 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiCreatedResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { ApiRes } from 'src/response/response.dto';
 import { LoginDto } from './dto/login.dto';
-import { AuthResponse } from 'src/response/auth.response';
 import { Response } from 'express';
-import { AuthGuard } from 'src/common/guards/auth.guard';
+import { ApiRes } from '@/response/response.dto';
+import { AuthResponse } from '@/response/auth.response';
+import { AuthGuard } from '@/common/guards/auth.guard';
 
 @Controller('auth')
 @ApiTags('Authentication')
@@ -52,6 +52,7 @@ export class AuthController {
   @Get('status')
   @UseGuards(AuthGuard)
   getStatus(@Req() req) {
+    console.log(req);
     return { authenticated: true };
   }
 }

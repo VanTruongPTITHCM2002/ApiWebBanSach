@@ -7,14 +7,14 @@ import {
 import { CreateCartitemDto } from './dto/create-cartitem.dto';
 import { UpdateCartitemDto } from './dto/update-cartitem.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cart } from 'src/carts/entities/cart.entity';
 import { Repository } from 'typeorm';
 import { Cartitem } from './entities/cartitem.entity';
-import { Account } from 'src/accounts/entities/account.entity';
-import { User } from 'src/users/entities/user.entity';
-import { Book } from 'src/books/entities/book.entity';
 import { Builder } from 'builder-pattern';
-import { ApiResponse } from 'src/response/apires';
+import { ApiResponse } from '@/response/apires';
+import { Cart } from '@/carts/entities/cart.entity';
+import { Account } from '@/accounts/entities/account.entity';
+import { User } from '@/users/entities/user.entity';
+import { Book } from '@/books/entities/book.entity';
 
 @Injectable()
 export class CartitemsService {
