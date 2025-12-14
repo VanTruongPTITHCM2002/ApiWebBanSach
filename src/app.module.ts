@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 
 import { EmployeesModule } from './employees/employees.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -21,6 +21,7 @@ import { Role } from './roles/entities/role.entity';
 import { Account } from './accounts/entities/account.entity';
 import { AppService } from './app.service';
 import { ormConfig } from './config/ormconfig';
+import { LoogerMiddleware } from './common/middleware/logger.middleware';
 
 @Module({
   imports: [
@@ -47,4 +48,8 @@ import { ormConfig } from './config/ormconfig';
   ],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoogerMiddleware).forRoutes('/api/v1/books');
+  }
+}
