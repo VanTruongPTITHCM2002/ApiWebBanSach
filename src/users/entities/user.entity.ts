@@ -1,7 +1,8 @@
+import { Account } from '@/accounts/entities/account.entity';
+import { Cart } from '@/carts/entities/cart.entity';
+import { Order } from '@/orders/entities/order.entity';
 import { Length } from 'class-validator';
-import { Account } from 'src/accounts/entities/account.entity';
-import { Cart } from 'src/carts/entities/cart.entity';
-import { Order } from 'src/orders/entities/order.entity';
+
 import {
   Column,
   Entity,

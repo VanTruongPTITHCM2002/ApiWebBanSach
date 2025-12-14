@@ -16,7 +16,7 @@ import { ApiRes } from '@/response/response.dto';
 import { AuthResponse } from '@/response/auth.response';
 import { AuthGuard } from '@/common/guards/auth.guard';
 
-@Controller('auth')
+@Controller('/api/v1/auth')
 @ApiTags('Authentication')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

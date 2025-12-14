@@ -1,3 +1,4 @@
+import { Account } from '@/accounts/entities/account.entity';
 import {
   IsAlphanumeric,
   IsEmail,
@@ -5,7 +6,6 @@ import {
   IsString,
   Length,
 } from 'class-validator';
-import { Account } from 'src/accounts/entities/account.entity';
 
 export class CreateUserDto {
   @IsString()

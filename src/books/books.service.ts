@@ -72,6 +72,7 @@ export class BooksService extends BaseService<Book> {
         isDeleted: false,
         status: true,
         image: file?.buffer,
+        link: createBookDto.link,
       };
       await this.bookRepository.save(book);
       return ApiRes.success('Thêm sách thành công');
@@ -183,6 +184,10 @@ export class BooksService extends BaseService<Book> {
 
         if (status !== null) {
           where.status = status;
+        }
+
+        if (filters.stock) {
+          where.stock = Number(filters.stock);
         }
 
         if (minPrice != null && maxPrice != null) {

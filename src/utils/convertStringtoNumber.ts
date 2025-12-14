@@ -1,4 +1,4 @@
-import { InvoiceStatus } from 'src/enum/InvoiceStatus';
+import { InvoiceStatus } from '@/enum/InvoiceStatus';
 
 const statusMap: Record<string, number> = {
   [InvoiceStatus.PENDING.toString()]: 0,

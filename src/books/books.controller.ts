@@ -17,9 +17,7 @@ import {
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt.guard';
-import { RolesGuard } from 'src/common/guards/role.guard';
-import { Roles } from 'src/common/decorators/role.decorators';
+
 import {
   ApiBearerAuth,
   ApiBody,
@@ -30,8 +28,11 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { BaseFilterDto } from 'src/request/base-filter.dto';
 import { FilterBookQueryDto } from './dto/filter-book-query.dto';
+import { JwtAuthGuard } from '@/common/guards/jwt.guard';
+import { RolesGuard } from '@/common/guards/role.guard';
+import { Roles } from '@/common/decorators/role.decorators';
+import { BaseFilterDto } from '@/request/base-filter.dto';
 @Controller('/api/v1/books')
 @ApiTags('books')
 export class BooksController {
@@ -86,13 +87,13 @@ export class BooksController {
   @ApiOkResponse({ description: 'Lấy danh sách có bộ lọc thành công' })
   @ApiBearerAuth()
   filterBook(
-    @Query('page') page: number = 1,
-    @Query('size') size: number = 5,
+    @Query('page') page: string = '1',
+    @Query('size') size: string = '5',
     @Query() query: FilterBookQueryDto,
   ) {
     const { page: _p, size: _s, ...filters } = query;
     console.log(_p, _s);
-    return this.booksService.filter(page, size, filters);
+    return this.booksService.filter(Number(page), Number(size), filters);
   }
 
   @Get('/buys')
