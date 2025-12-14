@@ -261,10 +261,9 @@ export class BooksService extends BaseService<Book> {
         relations: ['authorId', 'publisherId', 'category'],
       });
 
-      // Gán lại hoặc tạo trường mới (nên tạo mới để khỏi lẫn lộn)
       const bookWithImageBase64 = {
         ...book,
-        image: undefined, // hoặc xóa trường image gốc
+        image: undefined,
         imageBase64: book.image
           ? `data:image/jpeg;base64,${book.image.toString('base64')}`
           : null,

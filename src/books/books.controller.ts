@@ -83,6 +83,7 @@ export class BooksController {
   @Get('/filter')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
+  @ApiOkResponse({ description: 'Lấy danh sách có bộ lọc thành công' })
   filterBook(
     @Query('page') page: number = 1,
     @Query('size') size: number = 5,
