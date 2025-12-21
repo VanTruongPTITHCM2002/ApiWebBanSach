@@ -42,15 +42,35 @@ export class CategoriesService {
     }
   }
 
-  async findAll(page: number, size: number) {
+  async findAll(page: number, size: number, search?: string) {
     try {
-      const categories = await this.categoryRepository
-        .createQueryBuilder('category')
+      const baseQuery = this.categoryRepository.createQueryBuilder('category');
+
+      if (search !== 'undefied' && search !== 'null') {
+        baseQuery.where('category.categoryName LIKE :search', {
+          search: `%${search}%`,
+        });
+      }
+
+      const totalElements = await baseQuery.clone().getCount();
+
+      const categories = await baseQuery
         .loadRelationCountAndMap('category.bookCount', 'category.books')
         .skip((page - 1) * size)
         .take(size)
         .getMany();
-      return ApiRes.success('Danh sách danh mục của sách', categories);
+
+      const totalPages = Math.ceil(totalElements / size);
+
+      return ApiRes.success('Danh sách danh mục', {
+        content: categories,
+        page,
+        size,
+        totalElements,
+        totalPages,
+        first: page === 1,
+        last: page >= totalPages,
+      });
     } catch (error) {
       console.log(error);
       return ApiRes.error('Không thể lấy danh sách danh mục', 'Thất bại');
