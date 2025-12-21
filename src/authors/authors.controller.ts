@@ -28,8 +28,20 @@ export class AuthorsController {
   }
 
   @Get()
-  findAll(@Query('page') page: number = 1, @Query('size') size: number = 3) {
-    return this.authorsService.findAll(page, size);
+  findAll(
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 3,
+    @Query('firstName') firstName?: string,
+    @Query('lastName') lastName?: string,
+    @Query('country') country?: string,
+  ) {
+    return this.authorsService.findAll(
+      page,
+      size,
+      firstName,
+      lastName,
+      country,
+    );
   }
 
   @Get(':id')
