@@ -203,7 +203,7 @@ export class BooksService extends BaseService<Book> {
         }
 
         if (filters.authorId) {
-          where.authorId = { authorId: Number(filters.authorId) };
+          where['authorId'] = Number(filters.authorId);
         }
 
         if (filters.publisherId) {
