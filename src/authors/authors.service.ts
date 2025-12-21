@@ -3,7 +3,7 @@ import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Author } from './entities/author.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { ApiRes } from '@/response/response.dto';
 
 @Injectable()
@@ -30,15 +30,48 @@ export class AuthorsService {
     }
   }
 
-  async findAll(page: number, size: number) {
+  async findAll(
+    page: number,
+    size: number,
+    firstName: string,
+    lastName: string,
+    country: string,
+  ) {
     const skip = (page - 1) * size;
     const take = size;
+    const where: any = {};
+
+    if (firstName) {
+      where.firstname = ILike(`%${firstName}%`);
+    }
+
+    if (lastName) {
+      where.lastname = ILike(`%${lastName}%`);
+    }
+
+    if (country) {
+      where.country = ILike(`%${country}%`);
+    }
+
     try {
-      const authors = await this.authorRepository.findAndCount({
-        skip: skip,
-        take: take,
+      const [authors, totalElements] = await this.authorRepository.findAndCount(
+        {
+          skip,
+          take,
+          where,
+        },
+      );
+
+      const totalPages = Math.ceil(totalElements / size);
+      return ApiRes.success('Danh sách tác giả', {
+        content: authors,
+        page,
+        size,
+        totalElements,
+        totalPages,
+        first: page === 1,
+        last: page >= totalPages,
       });
-      return ApiRes.success('Danh sách tác giả', authors[0]);
     } catch (error) {
       console.log(error.message);
       return ApiRes.error('Lấy danh sách tác giả thất bại');
