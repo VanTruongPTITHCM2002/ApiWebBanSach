@@ -44,8 +44,12 @@ export class CategoriesController {
   @ApiOkResponse({
     description: 'The records have been successfully retrieved.',
   })
-  findAll(@Query('page') page: number = 1, @Query('size') size: number = 5) {
-    return this.categoriesService.findAll(page, size);
+  findAll(
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 5,
+    @Query('search') search?: string,
+  ) {
+    return this.categoriesService.findAll(page, size, search);
   }
 
   @Get(':id')
