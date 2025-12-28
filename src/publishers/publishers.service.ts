@@ -3,10 +3,11 @@ import { CreatePublisherDto } from './dto/create-publisher.dto';
 import { UpdatePublisherDto } from './dto/update-publisher.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Publisher } from './entities/publisher.entity';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { Builder } from 'builder-pattern';
 import { ApiRes } from '@/response/response.dto';
 import { ApiResponse } from '@/response/apires';
+import { filterPublisherQueryDto } from './dto/filter-publisher-query-dto';
 
 @Injectable()
 export class PublishersService {
@@ -29,24 +30,50 @@ export class PublishersService {
     }
   }
 
-  async findAll(page: number, size: number) {
-    let publishers = [];
-    try {
-      publishers = await this.publisherRepository.find({
-        skip: (page - 1) * size,
-        take: size,
-      });
+  async findAll(page: number, size: number, filters: filterPublisherQueryDto) {
+    const skip = (page - 1) * size;
+    const take = size;
+    let where: any = {};
 
-      return ApiRes.success(
-        'Hiện danh sách nhà xuất bản thành công',
-        publishers,
-      );
+    if (filters) {
+      if (filters.search) {
+        where = [
+          {
+            publisherName: ILike(`%${filters.search}%`),
+          },
+          {
+            publisherAddress: ILike(`%${filters.search}%`),
+          },
+        ];
+      }
+    }
+
+    try {
+      const [publishers, totalElements] =
+        await this.publisherRepository.findAndCount({
+          skip,
+          take,
+          where,
+        });
+
+      const totalPages = Math.ceil(totalElements / size);
+      return ApiRes.success('Hiện danh sách nhà xuất bản thành công', {
+        content: publishers,
+        page,
+        size,
+        totalElements,
+        totalPages,
+        first: page === 1,
+        last: page >= totalPages,
+      });
     } catch (error) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể lấy danh sách nhà xuất bản')
-        .data(publishers)
-        .build();
+      return (
+        Builder<ApiResponse<any>>()
+          .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
+          .message('Không thể lấy danh sách nhà xuất bản')
+          // .data(publishers)
+          .build()
+      );
     }
   }
 
