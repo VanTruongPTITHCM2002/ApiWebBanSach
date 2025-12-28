@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Author } from './entities/author.entity';
 import { ILike, Repository } from 'typeorm';
 import { ApiRes } from '@/response/response.dto';
+import { FilterAuthorQueryDto } from './dto/filter-author-query-dto';
 
 @Injectable()
 export class AuthorsService {
@@ -30,27 +31,19 @@ export class AuthorsService {
     }
   }
 
-  async findAll(
-    page: number,
-    size: number,
-    firstName: string,
-    lastName: string,
-    country: string,
-  ) {
+  async findAll(page: number, size: number, filters: FilterAuthorQueryDto) {
     const skip = (page - 1) * size;
     const take = size;
-    const where: any = {};
+    let where: any = {};
 
-    if (firstName) {
-      where.firstname = ILike(`%${firstName}%`);
-    }
-
-    if (lastName) {
-      where.lastname = ILike(`%${lastName}%`);
-    }
-
-    if (country) {
-      where.country = ILike(`%${country}%`);
+    if (filters) {
+      if (filters.search) {
+        where = [
+          { firstname: ILike(`%${filters.search}%`) },
+          { lastname: ILike(`%${filters.search}%`) },
+          { country: ILike(`%${filters.search}%`) },
+        ];
+      }
     }
 
     try {
