@@ -15,6 +15,7 @@ import { UpdateAuthorDto } from './dto/update-author.dto';
 import { RolesGuard } from '@/common/guards/role.guard';
 import { JwtAuthGuard } from '@/common/guards/jwt.guard';
 import { Roles } from '@/common/decorators/role.decorators';
+import { FilterAuthorQueryDto } from './dto/filter-author-query-dto';
 
 @Controller('authors')
 export class AuthorsController {
@@ -28,23 +29,21 @@ export class AuthorsController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   findAll(
     @Query('page') page: number = 1,
     @Query('size') size: number = 3,
-    @Query('firstName') firstName?: string,
-    @Query('lastName') lastName?: string,
-    @Query('country') country?: string,
+    @Query() query: FilterAuthorQueryDto,
   ) {
-    return this.authorsService.findAll(
-      page,
-      size,
-      firstName,
-      lastName,
-      country,
-    );
+    const { page: _p, size: _s, ...filters } = query;
+    console.log(_p, _s);
+    return this.authorsService.findAll(page, size, filters);
   }
 
   @Get(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
   findOne(@Param('id') id: string) {
     return this.authorsService.findOne(id);
   }
