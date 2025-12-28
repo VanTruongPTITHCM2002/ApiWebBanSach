@@ -16,6 +16,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { RolesGuard } from '@/common/guards/role.guard';
 import { JwtAuthGuard } from '@/common/guards/jwt.guard';
 import { Roles } from '@/common/decorators/role.decorators';
+import { filterPublisherQueryDto } from './dto/filter-publisher-query-dto';
 
 @Controller('publishers')
 @ApiTags('publishers')
@@ -30,8 +31,16 @@ export class PublishersController {
   }
 
   @Get()
-  findAll(@Query('page') page: number = 1, @Query('size') size: number = 5) {
-    return this.publishersService.findAll(page, size);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  findAll(
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 5,
+    @Query() query: filterPublisherQueryDto,
+  ) {
+    const { page: _p, size: _s, ...filters } = query;
+    console.log(_p, _s);
+    return this.publishersService.findAll(page, size, filters);
   }
 
   @Get(':id')
