@@ -88,14 +88,27 @@ export class InvoiceService {
   }
 
   async findAll(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+    const take = limit;
     try {
-      const invoices = await this.invoiceRepository.find({
-        // relations: ['invoiceItems'],
-        // order: { issueDate: 'DESC' },
-        skip: (page - 1) * limit,
-        take: limit,
+      const [invoices, totalElements] =
+        await this.invoiceRepository.findAndCount({
+          // relations: ['invoiceItems'],
+          // order: { issueDate: 'DESC' },
+          skip,
+          take,
+        });
+
+      const totalPages = Math.ceil(totalElements / limit);
+      return ApiRes.success('Get retrived all invoices', {
+        content: invoices,
+        page,
+        size: limit,
+        totalElements,
+        totalPages,
+        first: page === 1,
+        last: page >= totalPages,
       });
-      return ApiRes.success('Get retrived all invoices', invoices);
     } catch (error) {
       console.error(error);
       return ApiRes.internalServerError(
