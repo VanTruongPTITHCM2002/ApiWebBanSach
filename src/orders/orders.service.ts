@@ -59,16 +59,29 @@ export class OrdersService {
           'order.orderDate as orderDate',
           'order.status as status',
           'order.methodPay as methodPay',
-          'account.username as username', // chỉ lấy username
+          'account.username as username',
         ])
-        .addSelect("CONCAT(user.firstname, ' ', user.lastname)", 'fullName')
+        .addSelect("CONCAT(user.firstname, ' ', user.lastname)", 'fullName');
+
+      const totalElements = await orders.getCount();
+
+      const content = await orders
+        .orderBy('order.orderDate', 'DESC')
         .skip(skip)
         .take(take)
         .getRawMany();
-      return ApiRes.success(
-        'Lấy thành công danh sách đơn hàng',
-        orders.reverse(),
-      );
+
+      const totalPages = Math.ceil(totalElements / size);
+
+      return ApiRes.success('Lấy thành công danh sách đơn hàng', {
+        content,
+        page,
+        size,
+        totalElements,
+        totalPages,
+        first: page === 1,
+        last: page >= totalPages,
+      });
     } catch (error: any) {
       console.error(error.message);
       return ApiRes.internalServerError(
