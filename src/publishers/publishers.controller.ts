@@ -18,8 +18,8 @@ import { JwtAuthGuard } from '@/common/guards/jwt.guard';
 import { Roles } from '@/common/decorators/role.decorators';
 import { filterPublisherQueryDto } from './dto/filter-publisher-query-dto';
 
-@Controller('publishers')
-@ApiTags('publishers')
+@Controller('/api/v1/publishers')
+@ApiTags('/api/v1/publishers')
 export class PublishersController {
   constructor(private readonly publishersService: PublishersService) {}
 
@@ -41,6 +41,11 @@ export class PublishersController {
     const { page: _p, size: _s, ...filters } = query;
     console.log(_p, _s);
     return this.publishersService.findAll(page, size, filters);
+  }
+
+  @Get('/list')
+  findAllNotPaginate() {
+    return this.publishersService.findNotPaginate();
   }
 
   @Get(':id')
