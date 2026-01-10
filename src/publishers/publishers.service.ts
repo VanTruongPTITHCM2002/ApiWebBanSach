@@ -104,6 +104,19 @@ export class PublishersService {
       .build();
   }
 
+  async findNotPaginate() {
+    const publishers = await this.publisherRepository.find();
+
+    const publishersResponse = publishers.map((publisher) => {
+      return {
+        name: publisher.publisherName,
+        publisherId: publisher.publisherId,
+      };
+    });
+
+    return ApiRes.success('Get publishers successfully', publishersResponse);
+  }
+
   async update(id: number, updatePublisherDto: UpdatePublisherDto) {
     try {
       await this.publisherRepository.update(id, updatePublisherDto);
