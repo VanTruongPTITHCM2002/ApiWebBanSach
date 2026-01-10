@@ -77,6 +77,18 @@ export class CategoriesService {
     }
   }
 
+  async findAllNotPaginate() {
+    const categories = await this.categoryRepository.find();
+    const categoriesResponse = categories.map((category) => {
+      return {
+        name: category.categoryName,
+        categoryId: category.categoryId,
+      };
+    });
+
+    return ApiRes.success('Get Categories successfully', categoriesResponse);
+  }
+
   async findOne(id: number) {
     try {
       const category = await this.categoryRepository.findOne({
