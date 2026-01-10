@@ -24,8 +24,8 @@ import { JwtAuthGuard } from '@/common/guards/jwt.guard';
 import { RolesGuard } from '@/common/guards/role.guard';
 import { Roles } from '@/common/decorators/role.decorators';
 
-@Controller('categories')
-@ApiTags('categories')
+@Controller('/api/v1/categories')
+@ApiTags('/api/v1/categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
@@ -50,6 +50,11 @@ export class CategoriesController {
     @Query('search') search?: string,
   ) {
     return this.categoriesService.findAll(page, size, search);
+  }
+
+  @Get('/list')
+  findDisplay() {
+    return this.categoriesService.findAllNotPaginate();
   }
 
   @Get(':id')
