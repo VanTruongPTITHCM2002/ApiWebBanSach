@@ -89,7 +89,7 @@ export class CategoriesService {
     return ApiRes.success('Get Categories successfully', categoriesResponse);
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, page?: number, size?: number, sort?: string) {
     try {
       const category = await this.categoryRepository.findOne({
         where: { categoryId: id },
@@ -97,22 +97,59 @@ export class CategoriesService {
       if (!category) {
         throw new NotFoundException('Không tìm thấy danh mục');
       }
-      const books = await this.bookRepository.find({
+
+      let order = {};
+
+      if (sort) {
+        switch (sort) {
+          case 'min':
+            order = {
+              price: 'ASC',
+            };
+            break;
+          case 'max':
+            order = {
+              price: 'DESC',
+            };
+            break;
+        }
+      }
+
+      const [books, totalElements] = await this.bookRepository.findAndCount({
+        skip: (page - 1) * size,
+        take: size,
         where: { category: { categoryId: id } },
+        relations: ['authorId'],
+        order,
       });
 
+      const totalPages = Math.ceil(totalElements / size);
+
       const result = books.map((book) => ({
-        ...book,
-        image: undefined,
+        bookid: book.bookid,
+        title: book.title,
+        price: book.price,
+        link: book.link,
+        authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
         imageBase64: book.image
           ? `data:image/jpeg;base64,${book.image.toString('base64')}`
           : null,
       }));
-      return ApiRes.success('Tìm thấy danh mục', result);
+      return ApiRes.success('Tìm thấy danh mục', {
+        content: result,
+        page,
+        size,
+        totalElements,
+        totalPages,
+        first: page === 1,
+        last: page >= totalPages,
+        // filters,
+      });
     } catch (error) {
       if (error instanceof NotFoundException) {
         return ApiRes.notFound('Không tìm thấy danh mục', 'Thất bại');
       }
+      console.log(error);
       return ApiRes.error('Không thể tìm danh mục', 'Thất bại');
     }
   }
