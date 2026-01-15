@@ -12,6 +12,6 @@ export class Publisher {
   @Column({ length: 255 })
   publisherAddress: string;
 
-  @OneToMany(() => Book, (book) => book.publisherId)
+  @OneToMany(() => Book, (book) => book.publisher)
   books: Book[];
 }
