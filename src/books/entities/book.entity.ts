@@ -30,7 +30,7 @@ export class Book {
 
   @ManyToOne(() => Publisher, (publisher) => publisher.publisherId)
   @JoinColumn({ name: 'publisherId' })
-  publisherId: Publisher;
+  publisher: Publisher;
 
   @ManyToOne(() => Category, (category) => category.books)
   @JoinColumn({ name: 'categoryId' })
@@ -59,4 +59,7 @@ export class Book {
 
   @Column({ default: '' })
   link: string;
+
+  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt: Date;
 }
