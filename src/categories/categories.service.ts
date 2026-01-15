@@ -8,7 +8,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
-import { Repository } from 'typeorm';
+import { Between, LessThanOrEqual, MoreThanOrEqual, Repository } from 'typeorm';
 import { Book } from '@/books/entities/book.entity';
 import { ApiRes } from '@/response/response.dto';
 
@@ -89,7 +89,15 @@ export class CategoriesService {
     return ApiRes.success('Get Categories successfully', categoriesResponse);
   }
 
-  async findOne(id: number, page?: number, size?: number, sort?: string) {
+  async findOne(
+    id: number,
+    page?: number,
+    size?: number,
+    sort?: string,
+    publisherId?: string,
+    minPrice?: string,
+    maxPrice?: string,
+  ) {
     try {
       const category = await this.categoryRepository.findOne({
         where: { categoryId: id },
@@ -102,6 +110,11 @@ export class CategoriesService {
 
       if (sort) {
         switch (sort) {
+          case 'new':
+            order = {
+              createdAt: 'DESC',
+            };
+            break;
           case 'min':
             order = {
               price: 'ASC',
@@ -115,10 +128,35 @@ export class CategoriesService {
         }
       }
 
+      const pubId = Number(publisherId);
+
+      const toNumberOrNull = (v?: string) =>
+        v && v !== 'null' ? Number(v) : null;
+
+      const min = toNumberOrNull(minPrice);
+      const max = toNumberOrNull(maxPrice);
+
+      let priceCondition = {};
+
+      if (min !== null && max !== null) {
+        priceCondition = { price: Between(min, max) };
+      } else if (min !== null) {
+        priceCondition = { price: MoreThanOrEqual(min) };
+      } else if (max !== null) {
+        priceCondition = { price: LessThanOrEqual(max) };
+      }
+
       const [books, totalElements] = await this.bookRepository.findAndCount({
         skip: (page - 1) * size,
         take: size,
-        where: { category: { categoryId: id } },
+        where: {
+          category: { categoryId: id },
+          ...(+publisherId != 0 && {
+            publisher: { publisherId: pubId },
+          }),
+          ...priceCondition,
+        },
+
         relations: ['authorId'],
         order,
       });
