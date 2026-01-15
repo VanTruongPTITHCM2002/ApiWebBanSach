@@ -72,7 +72,8 @@ export class BooksService extends BaseService<Book> {
         isDeleted: false,
         status: true,
         image: file?.buffer,
-        link: createBookDto.link,
+        link: createBookDto.link || '',
+        createdAt: new Date(),
       };
       await this.bookRepository.save(book);
       return ApiRes.success('Thêm sách thành công');
@@ -112,7 +113,7 @@ export class BooksService extends BaseService<Book> {
           link: book.link,
           authorName: `${book.authorId.firstname} ${book.authorId.lastname}`,
           categoryName: book.category.categoryName,
-          publisherName: book.publisherId.publisherName,
+          publisherName: book.publisher.publisherName,
         };
       });
 
@@ -151,7 +152,7 @@ export class BooksService extends BaseService<Book> {
           ...book,
           authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
           categoryName: book.category.categoryName,
-          publisherName: book.publisherId.publisherName,
+          publisherName: book.publisher.publisherName,
           imageBase64,
         };
       }),
@@ -207,7 +208,7 @@ export class BooksService extends BaseService<Book> {
         }
 
         if (filters.publisherId) {
-          where.publisherId = { publisherId: Number(filters.publisherId) };
+          where.publisher = { publisherId: Number(filters.publisherId) };
         }
       }
 
@@ -238,7 +239,7 @@ export class BooksService extends BaseService<Book> {
           link: book.link,
           authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
           categoryName: book.category.categoryName,
-          publisherName: book.publisherId.publisherName,
+          publisherName: book.publisher.publisherName,
         };
       });
 
@@ -370,7 +371,7 @@ export class BooksService extends BaseService<Book> {
         title: updateBookDto.title,
         authorId: { authorId: author.authorId },
         category: { categoryId: category.categoryId },
-        publisherId: { publisherId: publisher.publisherId },
+        publisher: { publisherId: publisher.publisherId },
         price: updateBookDto.price,
         stock: updateBookDto.stock,
         link: updateBookDto.link,
