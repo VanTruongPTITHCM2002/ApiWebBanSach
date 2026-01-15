@@ -18,4 +18,5 @@ export const ormConfig: MysqlConnectionOptions = {
   password: DATABASE_PASSWORD,
   entities: [join(__dirname, '..', '**', '*.entity.{ts,js}')],
   synchronize: true,
+  logging: ['query', 'error'],
 };
