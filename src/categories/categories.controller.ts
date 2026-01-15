@@ -65,8 +65,19 @@ export class CategoriesController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('size', new DefaultValuePipe(10), ParseIntPipe) size: number,
     @Query('sort') sort: string,
+    @Query('publisherId') publisherId: string,
+    @Query('minPrice') minPrice: string,
+    @Query('maxPrice') maxPrice: string,
   ) {
-    return this.categoriesService.findOne(+id, page, size, sort);
+    return this.categoriesService.findOne(
+      +id,
+      page,
+      size,
+      sort,
+      publisherId,
+      minPrice,
+      maxPrice,
+    );
   }
 
   @Patch(':id')
