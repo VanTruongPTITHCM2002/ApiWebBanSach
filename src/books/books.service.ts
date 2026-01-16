@@ -266,20 +266,28 @@ export class BooksService extends BaseService<Book> {
     try {
       const book = await this.bookRepository.findOne({
         where: { bookid: id },
-        relations: ['authorId', 'publisherId', 'category'],
+        relations: ['authorId', 'publisher', 'category'],
       });
 
-      const bookWithImageBase64 = {
-        ...book,
-        image: undefined,
-        imageBase64: book.image
-          ? `data:image/jpeg;base64,${book.image.toString('base64')}`
-          : null,
-      };
-      return ApiRes.success(
-        'Hiện thông tin sách thành công',
-        bookWithImageBase64,
-      );
+      let imageBase64 = null;
+
+      if (book.image && book.image instanceof Buffer) {
+        imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
+      }
+
+      return ApiRes.success('Hiện thông tin sách thành công', {
+        bookid: book.bookid,
+        title: book.title,
+        isDeleted: book.isDeleted,
+        price: book.price,
+        stock: book.stock,
+        status: book.status,
+        imageBase64,
+        link: book.link,
+        authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
+        categoryName: book.category.categoryName,
+        publisherName: book.publisher.publisherName,
+      });
     } catch (error) {
       console.log(error.message);
       throw new HttpException(
