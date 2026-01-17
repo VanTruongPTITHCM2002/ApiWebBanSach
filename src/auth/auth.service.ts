@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -11,9 +11,13 @@ import { UsersService } from '@/users/users.service';
 import { Account } from '@/accounts/entities/account.entity';
 import { ApiRes } from '@/response/response.dto';
 import { AuthResponse } from '@/response/auth.response';
+import { MessageSuccess } from '@/enum/message.success.enum';
+import { MessageError } from '@/enum/message.error.enum';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name, { timestamp: true });
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly accountService: AccountsService,
@@ -69,13 +73,16 @@ export class AuthService {
     res: Response,
     rememberMe: boolean,
   ): Promise<ApiRes<string | AuthResponse>> {
+    this.logger.log('Bắt đầu thực hiện đăng nhập....');
     try {
       const account = await this.accountRepository.findOne({
         where: { username: username },
         relations: ['roleId'],
       });
       if (!account)
-        return ApiRes.notFound(`Không tìm thấy tài khoản ${username}`);
+        return ApiRes.notFound(
+          `${MessageError.USERNAME_NOT_FOUND} ${username}`,
+        );
 
       if (!account.status)
         return ApiRes.forbidden('Bạn không thể đăng nhập', 'Thất bại');
@@ -93,9 +100,12 @@ export class AuthService {
         maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : undefined,
       });
 
-      return ApiRes.success('Đăng nhập thành công');
+      return ApiRes.success(MessageSuccess.LOGIN_SUCCESS);
     } catch (error: any) {
-      return ApiRes.error('Đã có lỗi xảy ra trong hệ thống');
+      console.log(error.message);
+      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
+    } finally {
+      this.logger.log('Kết thúc quá trình đăng nhập');
     }
   }
 
