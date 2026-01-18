@@ -106,6 +106,11 @@ export class BooksController {
     return this.booksService.getBooksByReviews();
   }
 
+  @Get('/search-suggestions')
+  getBookSearchSuggestions(@Query('name') name: string) {
+    return this.booksService.getBookSearchSuggestions(name);
+  }
+
   @Get('/name')
   getBookByBookName(@Query('bookName') bookName: string) {
     return this.booksService.getBookByName(bookName);
