@@ -41,7 +41,7 @@ export class AuthService {
         'Bắt đầu quá trình đăng ký tài khoản: ',
         signUpDto.username,
       );
-      const account = await this.getAccountByUsername(signUpDto.username);
+      const account = await this.getAccountByUsername(signUpDto.username, true);
       this.validateUsernameExsists(account);
       this.validateMatchPassword(signUpDto.password, signUpDto.repassword);
 
@@ -79,7 +79,7 @@ export class AuthService {
     try {
       const account = await this.getAccountByUsername(username);
 
-      this.checkPassword(password, account.password);
+      await this.checkPassword(password, account.password);
 
       const token = await this.generateToken(account);
 
@@ -119,20 +119,22 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  async getAccountByUsername(username: string) {
+  async getAccountByUsername(username: string, isCreated = false) {
     const account = await this.accountRepository.findOne({
       where: { username: username },
       relations: ['roleId'],
     });
 
-    if (!account) {
-      throw new NotFoundException(
-        `${MessageError.USERNAME_NOT_FOUND} ${username}`,
-      );
-    }
+    if (!isCreated) {
+      if (!account) {
+        throw new NotFoundException(
+          `${MessageError.USERNAME_NOT_FOUND} ${username}`,
+        );
+      }
 
-    if (!account.status) {
-      throw new ForbiddenException(MessageError.USER_NOT_LOGIN);
+      if (!account.status) {
+        throw new ForbiddenException(MessageError.USER_NOT_LOGIN);
+      }
     }
 
     return account;
