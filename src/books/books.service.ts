@@ -18,6 +18,7 @@ import { ApiRes } from '@/response/response.dto';
 import { BaseFilterDto } from '@/request/base-filter.dto';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
+import { MessageError } from '@/enum/message.error.enum';
 
 @Injectable()
 export class BooksService extends BaseService<Book> {
@@ -406,6 +407,23 @@ export class BooksService extends BaseService<Book> {
       return ApiRes.success('Xóa sách thành công');
     } catch (error) {
       return ApiRes.error('Không thể xóa sách');
+    }
+  }
+
+  async getBookSearchSuggestions(name: string) {
+    try {
+      const books = await this.bookRepository.find({
+        where: {
+          title: ILike(`%${name}%`),
+        },
+        // take: 5,
+      });
+      const suggestions = books.map((book) => book.title);
+
+      return ApiRes.success('Lấy gợi ý tìm kiếm thành công', suggestions);
+    } catch (error) {
+      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
+    } finally {
     }
   }
 }
