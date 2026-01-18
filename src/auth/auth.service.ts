@@ -1,4 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -17,6 +23,8 @@ import { MessageError } from '@/enum/message.error.enum';
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name, { timestamp: true });
+
+  static ATTRIBUTE_TOKEN = 'access_token';
 
   constructor(
     private readonly jwtService: JwtService,
@@ -73,54 +81,93 @@ export class AuthService {
     res: Response,
     rememberMe: boolean,
   ): Promise<ApiRes<string | AuthResponse>> {
-    this.logger.log('Bắt đầu thực hiện đăng nhập....');
+    this.logger.log('Bắt đầu thực hiện đăng nhập với tài khoản: ', username);
     try {
-      const account = await this.accountRepository.findOne({
-        where: { username: username },
-        relations: ['roleId'],
-      });
-      if (!account)
-        return ApiRes.notFound(
-          `${MessageError.USERNAME_NOT_FOUND} ${username}`,
-        );
+      const account = await this.getAccountByUsername(username);
 
-      if (!account.status)
-        return ApiRes.forbidden('Bạn không thể đăng nhập', 'Thất bại');
-
-      const isMatch = await bcrypt.compare(password, account.password);
-      if (!isMatch)
-        return ApiRes.unauthorized('Tài khoản hoặc mật khẩu không đúng');
+      this.checkPassword(password, account.password);
 
       const token = await this.generateToken(account);
 
-      res.cookie('access_token', token, {
+      this.setTokenCookie(res, token, rememberMe);
+
+      return ApiRes.success(MessageSuccess.LOGIN_SUCCESS);
+    } catch (error: any) {
+      this.logger.log(
+        `Xảy ra lỗi khi đăng nhập tài khoản ${username} : `,
+        error.message,
+      );
+      if (error instanceof NotFoundException) {
+        return ApiRes.notFound(error.message);
+      }
+
+      if (error instanceof ForbiddenException) {
+        return ApiRes.forbidden(error.message);
+      }
+
+      if (error instanceof UnauthorizedException) {
+        return ApiRes.unauthorized(error.message);
+      }
+
+      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
+    } finally {
+      this.logger.log(`Kết thúc quá trình đăng nhập với tài khoản ${username}`);
+    }
+  }
+
+  async logout(res: Response) {
+    this.setTokenCookie(res);
+    return ApiRes.success(MessageSuccess.LOGOUT_SUCCESS);
+  }
+
+  async generateToken(account: Account): Promise<string> {
+    const payload = { sub: account.username, role: account.roleId.roleName };
+    return this.jwtService.sign(payload);
+  }
+
+  async getAccountByUsername(username: string) {
+    const account = await this.accountRepository.findOne({
+      where: { username: username },
+      relations: ['roleId'],
+    });
+
+    if (!account) {
+      throw new NotFoundException(
+        `${MessageError.USERNAME_NOT_FOUND} ${username}`,
+      );
+    }
+
+    if (!account.status) {
+      throw new ForbiddenException(MessageError.USER_NOT_LOGIN);
+    }
+
+    return account;
+  }
+
+  async checkPassword(
+    passwordRequest: string,
+    passwordHash: string,
+  ): Promise<void> {
+    const isMatch = await bcrypt.compare(passwordRequest, passwordHash);
+    if (!isMatch) {
+      throw new UnauthorizedException(MessageError.USER_INCORRECT);
+    }
+  }
+
+  async setTokenCookie(res: Response, token?: string, rememberMe?: boolean) {
+    if (token) {
+      return res.cookie(AuthService.ATTRIBUTE_TOKEN, token, {
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
         maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : undefined,
       });
-
-      return ApiRes.success(MessageSuccess.LOGIN_SUCCESS);
-    } catch (error: any) {
-      console.log(error.message);
-      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
-    } finally {
-      this.logger.log('Kết thúc quá trình đăng nhập');
     }
-  }
-
-  async logout(res: Response) {
-    res.cookie('access_token', '', {
+    return res.cookie(AuthService.ATTRIBUTE_TOKEN, '', {
       httpOnly: true,
       secure: true, // bật nếu dùng HTTPS
       sameSite: 'strict', // hoặc 'Strict' hoặc 'None' nếu cần chia domain
       maxAge: 0,
     });
-    return ApiRes.success('Đăng xuất thành công');
-  }
-
-  async generateToken(account: Account): Promise<string> {
-    const payload = { sub: account.username, role: account.roleId.roleName }; // 'sub' là một payload phổ biến trong JWT
-    return this.jwtService.sign(payload);
   }
 }
