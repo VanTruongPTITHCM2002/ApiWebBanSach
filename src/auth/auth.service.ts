@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
@@ -36,42 +37,35 @@ export class AuthService {
 
   async signup(signUpDto: SignUpDto): Promise<ApiRes<string>> {
     try {
-      const account = await this.accountRepository.findOne({
-        where: { username: signUpDto.username },
-      });
+      this.logger.log(
+        'Bắt đầu quá trình đăng ký tài khoản: ',
+        signUpDto.username,
+      );
+      const account = await this.getAccountByUsername(signUpDto.username);
+      this.validateUsernameExsists(account);
+      this.validateMatchPassword(signUpDto.password, signUpDto.repassword);
 
-      if (account)
-        return ApiRes.badRequest(`Tài khoản ${signUpDto.username} đã tồn tại`);
+      const { username, password } = signUpDto;
 
-      if (signUpDto.password !== signUpDto.repassword)
-        return ApiRes.badRequest('Mật khẩu không trùng khớp');
-
-      const { username, password, firstname, lastname, email, address, phone } =
-        signUpDto;
-
-      const newAccount = await this.accountService.create({
+      await this.accountService.create({
         username,
         password,
       });
-
-      const informAccount = this.userService.create({
-        firstname,
-        lastname,
-        email,
-        address,
-        phone,
-        accountId: newAccount,
-      });
-
-      if (!newAccount || !informAccount)
-        return ApiRes.error('Không thể tạo tài khoản');
 
       return ApiRes.created(
         `Tài khoản ${signUpDto.username} đã được tạo thành công`,
       );
     } catch (error: any) {
-      console.log(error.message);
-      return ApiRes.error('Đã có lỗi xảy ra');
+      this.logger.log(error.message);
+      if (error instanceof BadRequestException) {
+        return ApiRes.badRequest(error.message);
+      }
+
+      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
+    } finally {
+      this.logger.log(
+        `Kết thúc quá trình đăng ký tài khoản: ${signUpDto.username}`,
+      );
     }
   }
 
@@ -169,5 +163,17 @@ export class AuthService {
       sameSite: 'strict', // hoặc 'Strict' hoặc 'None' nếu cần chia domain
       maxAge: 0,
     });
+  }
+
+  validateUsernameExsists(account: Account) {
+    if (account) {
+      throw new BadRequestException(`Tài khoản ${account.username} đã tồn tại`);
+    }
+  }
+
+  validateMatchPassword(password: string, repassword: string) {
+    if (password !== repassword) {
+      throw new BadRequestException('Mật khẩu không trùng khớp');
+    }
   }
 }
