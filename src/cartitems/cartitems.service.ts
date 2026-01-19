@@ -59,7 +59,7 @@ export class CartitemsService {
       let cartExists = await this.cartRepository.findOne({
         where: {
           usersId: { usersId: user.usersId },
-          status: true,
+          isActive: true,
         },
       });
 
@@ -67,7 +67,7 @@ export class CartitemsService {
         cartExists = await this.cartRepository.save({
           usersId: user,
           createAt: new Date(createCartitemDto.cartDto.createAt),
-          status: true,
+          isActive: true,
         });
       }
 
@@ -173,7 +173,7 @@ export class CartitemsService {
     }
   }
 
-  async update(id: number, updateCartitemDto: UpdateCartitemDto) {
+  async update(id: string, updateCartitemDto: UpdateCartitemDto) {
     try {
       const [cart, book] = await Promise.all([
         this.cartRepository.findOne({

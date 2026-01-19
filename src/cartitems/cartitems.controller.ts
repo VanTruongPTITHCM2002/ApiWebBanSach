@@ -44,7 +44,7 @@ export class CartitemsController {
     @Param('id') id: string,
     @Body() updateCartitemDto: UpdateCartitemDto,
   ) {
-    return this.cartitemsService.update(+id, updateCartitemDto);
+    return this.cartitemsService.update(id, updateCartitemDto);
   }
 
   @Delete(':id')
