@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  ParseIntPipe,
   Query,
   UseInterceptors,
   UploadedFile,
@@ -121,8 +120,8 @@ export class BooksController {
     description: 'Tìm thành công sách cần tìm',
   })
   @ApiParam({ name: 'id', type: 'number' })
-  findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.booksService.findOne(+id);
+  findOne(@Param('id') id: string) {
+    return this.booksService.findOne(id);
   }
 
   @Patch(':id')
@@ -148,7 +147,7 @@ export class BooksController {
     name: 'id',
     type: 'number',
   })
-  remove(@Param('id') id: number) {
+  remove(@Param('id') id: string) {
     return this.booksService.remove(id);
   }
 }

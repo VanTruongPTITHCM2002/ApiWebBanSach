@@ -263,7 +263,7 @@ export class BooksService extends BaseService<Book> {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     try {
       const book = await this.bookRepository.findOne({
         where: { bookid: id },
@@ -378,7 +378,7 @@ export class BooksService extends BaseService<Book> {
 
       await this.bookRepository.update(id, {
         title: updateBookDto.title,
-        authorId: { authorId: author.authorId },
+        authorId: { id: author.id },
         category: { categoryId: category.categoryId },
         publisher: { publisherId: publisher.publisherId },
         price: updateBookDto.price,
@@ -392,7 +392,7 @@ export class BooksService extends BaseService<Book> {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     try {
       const book = await this.bookRepository.findOne({
         where: { bookid: id },
