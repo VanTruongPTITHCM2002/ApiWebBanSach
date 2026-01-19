@@ -85,7 +85,7 @@ export class InvoiceitemService {
     return `This action returns all invoiceitem`;
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     try {
       const invoice = await this.invoiceRepository.findOne({
         where: { invoiceId: id },

@@ -27,7 +27,7 @@ export class InvoiceitemController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.invoiceitemService.findOne(+id);
+    return this.invoiceitemService.findOne(id);
   }
 
   @Patch(':id')

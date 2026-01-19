@@ -2,7 +2,7 @@ import { IsInt, IsNumber, IsOptional, Min } from 'class-validator';
 
 export class CreateInvoiceItemDto {
   @IsInt()
-  bookId: number;
+  bookId: string;
 
   @IsInt()
   @Min(1)
