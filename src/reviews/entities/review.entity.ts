@@ -1,5 +1,6 @@
 import { Account } from '@/accounts/entities/account.entity';
 import { Book } from '@/books/entities/book.entity';
+import { BaseEntity } from '@/common/base.entity';
 import {
   Column,
   Entity,
@@ -9,9 +10,9 @@ import {
 } from 'typeorm';
 
 @Entity('reviews')
-export class Review {
-  @PrimaryGeneratedColumn()
-  reviewId: number;
+export class Review extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  reviewId: string;
 
   @ManyToOne(() => Account, (account) => account.reviewlst)
   @JoinColumn({ name: 'userId' })

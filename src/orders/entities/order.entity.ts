@@ -1,3 +1,4 @@
+import { BaseEntity } from '@/common/base.entity';
 import { Invoice } from '@/invoice/entities/invoice.entity';
 import { Orderdetail } from '@/orderdetail/entities/orderdetail.entity';
 import { User } from '@/users/entities/user.entity';
@@ -11,9 +12,9 @@ import {
 } from 'typeorm';
 
 @Entity('orders')
-export class Order {
-  @PrimaryGeneratedColumn()
-  orderId: number;
+export class Order extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  orderId: string;
 
   @ManyToOne(() => User, (user) => user.orders)
   @JoinColumn({ name: 'userId' })
@@ -35,5 +36,5 @@ export class Order {
   methodPay: string; //COD, BANKING
 
   @Column()
-  status: number; // 0: Pending, 1: Completed, 2: Processing, 3: Shipping, -1: Cancel, 4: Refund
+  workflowStatus: number; // 0: Pending, 1: Completed, 2: Processing, 3: Shipping, -1: Cancel, 4: Refund
 }

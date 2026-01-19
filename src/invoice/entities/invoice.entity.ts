@@ -1,3 +1,4 @@
+import { BaseEntity } from '@/common/base.entity';
 import { InvoiceItem } from '@/invoiceitem/entities/invoiceitem.entity';
 import { Order } from '@/orders/entities/order.entity';
 import { User } from '@/users/entities/user.entity';
@@ -22,9 +23,9 @@ export enum PaymentMethod {
 }
 
 @Entity()
-export class Invoice {
-  @PrimaryGeneratedColumn()
-  invoiceId: number;
+export class Invoice extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  invoiceId: string;
 
   @Column({ unique: true })
   invoiceCode: string;

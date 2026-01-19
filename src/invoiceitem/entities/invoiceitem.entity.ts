@@ -1,4 +1,5 @@
 import { Book } from '@/books/entities/book.entity';
+import { BaseEntity } from '@/common/base.entity';
 import { Invoice } from '@/invoice/entities/invoice.entity';
 import {
   Column,
@@ -9,9 +10,9 @@ import {
 } from 'typeorm';
 
 @Entity('invoiceitem')
-export class InvoiceItem {
-  @PrimaryGeneratedColumn()
-  invoiceitemId: number;
+export class InvoiceItem extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  invoiceitemId: string;
 
   @Column({ type: 'int' })
   quantity: number;

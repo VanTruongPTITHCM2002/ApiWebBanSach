@@ -1,4 +1,5 @@
 import { Cartitem } from '@/cartitems/entities/cartitem.entity';
+import { BaseEntity } from '@/common/base.entity';
 import { User } from '@/users/entities/user.entity';
 import {
   Column,
@@ -10,9 +11,9 @@ import {
 } from 'typeorm';
 
 @Entity('carts')
-export class Cart {
-  @PrimaryGeneratedColumn()
-  cartId: number;
+export class Cart extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  cartId: string;
 
   @ManyToOne(() => User, (user) => user.carts)
   @JoinColumn({ name: 'usersId' })
@@ -23,7 +24,4 @@ export class Cart {
 
   @OneToMany(() => Cartitem, (cartItem) => cartItem.carts)
   cartItemId: Cartitem[];
-
-  @Column()
-  status: boolean;
 }

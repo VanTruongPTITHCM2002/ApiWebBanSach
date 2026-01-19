@@ -1,5 +1,6 @@
 import { Author } from '@/authors/entities/author.entity';
 import { Category } from '@/categories/entities/category.entity';
+import { BaseEntity } from '@/common/base.entity';
 import { InvoiceItem } from '@/invoiceitem/entities/invoiceitem.entity';
 import { Orderdetail } from '@/orderdetail/entities/orderdetail.entity';
 import { Publisher } from '@/publishers/entities/publisher.entity';
@@ -14,9 +15,9 @@ import {
 } from 'typeorm';
 
 @Entity('books')
-export class Book {
-  @PrimaryGeneratedColumn()
-  bookid: number;
+export class Book extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  bookid: string;
 
   @Column({ length: 45 })
   title: string;
@@ -24,7 +25,7 @@ export class Book {
   @Column()
   isDeleted: boolean;
 
-  @ManyToOne(() => Author, (author) => author.authorId)
+  @ManyToOne(() => Author, (author) => author.id)
   @JoinColumn({ name: 'authorId' })
   authorId: Author;
 
@@ -59,7 +60,4 @@ export class Book {
 
   @Column({ default: '' })
   link: string;
-
-  @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
 }

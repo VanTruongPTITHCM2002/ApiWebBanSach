@@ -1,5 +1,6 @@
 import { Account } from '@/accounts/entities/account.entity';
 import { Cart } from '@/carts/entities/cart.entity';
+import { BaseEntity } from '@/common/base.entity';
 import { Order } from '@/orders/entities/order.entity';
 import { Length } from 'class-validator';
 
@@ -13,9 +14,9 @@ import {
 } from 'typeorm';
 
 @Entity('users')
-export class User {
-  @PrimaryGeneratedColumn()
-  usersId: number;
+export class User extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  usersId: string;
 
   @Column({ length: 100 })
   @Length(1, 100)

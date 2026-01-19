@@ -1,10 +1,11 @@
 import { Book } from '@/books/entities/book.entity';
+import { BaseEntity } from '@/common/base.entity';
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('authors')
-export class Author {
-  @PrimaryGeneratedColumn()
-  authorId: number;
+export class Author extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ length: 45 })
   firstname: string;
