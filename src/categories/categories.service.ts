@@ -90,7 +90,7 @@ export class CategoriesService {
   }
 
   async findOne(
-    id: number,
+    id: string,
     page?: number,
     size?: number,
     sort?: string,
@@ -128,8 +128,6 @@ export class CategoriesService {
         }
       }
 
-      const pubId = Number(publisherId);
-
       const toNumberOrNull = (v?: string) =>
         v && v !== 'null' ? Number(v) : null;
 
@@ -151,8 +149,8 @@ export class CategoriesService {
         take: size,
         where: {
           category: { categoryId: id },
-          ...(+publisherId != 0 && {
-            publisher: { publisherId: pubId },
+          ...(publisherId !== null && {
+            publisher: { publisherId: publisherId },
           }),
           ...priceCondition,
         },
@@ -192,7 +190,7 @@ export class CategoriesService {
     }
   }
 
-  async update(id: number, updateCategoryDto: UpdateCategoryDto) {
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
     try {
       await this.categoryRepository.update(id, updateCategoryDto);
       return ApiRes.success('Cập nhật danh mục thành công', 'Thành công');
@@ -201,7 +199,7 @@ export class CategoriesService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     try {
       const listBookByCategory = await this.bookRepository.find({
         where: { category: { categoryId: id } },
