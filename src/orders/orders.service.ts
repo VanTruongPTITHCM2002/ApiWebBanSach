@@ -35,8 +35,9 @@ export class OrdersService {
       const order = this.orderRepository.create({
         userId: user,
         orderDate: createOrderDto.orderDate,
-        status: 1,
+        workflowStatus: 1,
         totalAmount: 0,
+        isActive: true,
       });
       await this.orderRepository.save(order);
       return ApiRes.created('Tạo đơn hàng thành công');
@@ -90,7 +91,7 @@ export class OrdersService {
     }
   }
 
-  async findOne(id?: number) {
+  async findOne(id?: string) {
     try {
       const order = await this.orderRepository.findOne({
         where: { orderId: id },
@@ -143,7 +144,7 @@ export class OrdersService {
     }
   }
 
-  async update(id: number, updateOrderDto: UpdateOrderDto) {
+  async update(id: string, updateOrderDto: UpdateOrderDto) {
     try {
       const order = await this.orderRepository.findOne({
         where: { orderId: id },
@@ -151,7 +152,7 @@ export class OrdersService {
 
       if (!order) return ApiRes.notFound(`Không tìm thấy đơn hàng có mã ${id}`);
 
-      order.status = updateOrderDto.status;
+      order.workflowStatus = updateOrderDto.status;
       await this.orderRepository.save(order);
       return ApiRes.success('Cập nhật thành công trạng thái đơn hàng');
     } catch (error: any) {
@@ -160,14 +161,14 @@ export class OrdersService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     try {
       const order = await this.orderRepository.findOne({
         where: { orderId: id },
       });
       if (!order) return ApiRes.notFound(`Không tìm thấy đơn hàng có mã ${id}`);
 
-      order.status = -1;
+      order.workflowStatus = -1;
       await this.orderRepository.save(order);
       return ApiRes.success('Xóa thành công đơn hàng');
     } catch (error: any) {
