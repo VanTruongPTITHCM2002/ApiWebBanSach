@@ -40,7 +40,7 @@ export class CartsService {
       const cart = await this.cartRepository.create({
         usersId: user,
         createAt: createCartDto.createAt,
-        status: true,
+        isActive: true,
       });
       await this.cartRepository.save(cart);
       return Builder<ApiResponse<any>>()
@@ -110,7 +110,7 @@ export class CartsService {
       const result = {
         cartId: cart.cartId,
         createAt: cart.createAt,
-        status: cart.status,
+        status: cart.isActive,
         cartItems: cart.cartItemId.map((item) => ({
           cartItemId: item.cartitemId,
           quantity: item.quantity,
@@ -132,14 +132,14 @@ export class CartsService {
     }
   }
 
-  async update(id: number, updateCartDto: UpdateCartDto) {
+  async update(id: string, updateCartDto: UpdateCartDto) {
     try {
       const cart = await this.cartRepository.findOne({ where: { cartId: id } });
       if (!cart) {
         throw new NotFoundException('Không tìm thấy giỏ hàng này');
       }
       cart.createAt = updateCartDto.createAt;
-      cart.status = updateCartDto.status === 'Đang chờ' ? false : true;
+      cart.isActive = updateCartDto.status === 'Đang chờ' ? false : true;
       this.cartRepository.save(cart);
       return Builder<ApiResponse<any>>()
         .statusCode(HttpStatus.OK)
@@ -153,7 +153,7 @@ export class CartsService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     try {
       const cart = await this.cartRepository.findOne({
         where: { cartId: id },
