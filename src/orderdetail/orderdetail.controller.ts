@@ -27,7 +27,7 @@ export class OrderdetailController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.orderdetailService.findOne(+id);
+    return this.orderdetailService.findOne(id);
   }
 
   @Patch(':id')
@@ -35,7 +35,7 @@ export class OrderdetailController {
     @Param('id') id: string,
     @Body() updateOrderdetailDto: UpdateOrderdetailDto,
   ) {
-    return this.orderdetailService.update(+id, updateOrderdetailDto);
+    return this.orderdetailService.update(id, updateOrderdetailDto);
   }
 
   @Delete(':id')

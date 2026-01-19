@@ -62,8 +62,9 @@ export class OrderdetailService {
       const order = await this.orderRepository.create({
         orderDate: new Date(),
         userId: user,
-        status: 0,
+        workflowStatus: 0,
         totalAmount: 0,
+        isActive: true,
       });
       const newOder = await this.orderRepository.save(order);
 
@@ -112,7 +113,7 @@ export class OrderdetailService {
     }
   }
 
-  async findOne(orderId: number) {
+  async findOne(orderId: string) {
     try {
       const orderDetail = await this.orderDetailRepository.find({
         where: { orderId: { orderId: orderId } },
@@ -129,7 +130,7 @@ export class OrderdetailService {
     }
   }
 
-  async update(id: number, updateOrderdetailDto: UpdateOrderdetailDto) {
+  async update(id: string, updateOrderdetailDto: UpdateOrderdetailDto) {
     try {
       const [order, book] = await Promise.all([
         this.orderRepository.findOne({
