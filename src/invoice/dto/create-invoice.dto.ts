@@ -13,10 +13,10 @@ import { CreateInvoiceItemDto } from '@/invoiceitem/dto/create-invoiceitem.dto';
 
 export class CreateInvoiceDto {
   @IsInt()
-  orderId: number;
+  orderId: string;
 
   @IsInt()
-  userId: number;
+  userId: string;
 
   @IsOptional()
   @IsString()

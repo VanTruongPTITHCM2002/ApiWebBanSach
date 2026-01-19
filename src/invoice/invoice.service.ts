@@ -117,7 +117,7 @@ export class InvoiceService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     try {
       const invoice = await this.invoiceRepository.findOne({
         where: { invoiceId: id },
@@ -161,7 +161,7 @@ export class InvoiceService {
     }
   }
 
-  async update(id: number, updateInvoiceDto: UpdateInvoiceDto) {
+  async update(id: string, updateInvoiceDto: UpdateInvoiceDto) {
     try {
       const invoice: Invoice = await this.invoiceRepository.findOne({
         where: { invoiceId: id },
@@ -177,7 +177,7 @@ export class InvoiceService {
     }
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} invoice`;
   }
 }

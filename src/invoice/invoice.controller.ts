@@ -34,16 +34,16 @@ export class InvoiceController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.invoiceService.findOne(+id);
+    return this.invoiceService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateInvoiceDto: UpdateInvoiceDto) {
-    return this.invoiceService.update(+id, updateInvoiceDto);
+    return this.invoiceService.update(id, updateInvoiceDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.invoiceService.remove(+id);
+    return this.invoiceService.remove(id);
   }
 }
