@@ -4,5 +4,5 @@ import { IsOptional } from 'class-validator';
 
 export class UpdateCartitemDto extends PartialType(CreateCartitemDto) {
   @IsOptional()
-  cartItemId: number;
+  cartItemId: string;
 }
