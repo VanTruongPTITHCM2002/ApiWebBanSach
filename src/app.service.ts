@@ -15,6 +15,19 @@ export class AppService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
+    const rolesOrigin = await this.roleRepository.find();
+    if (rolesOrigin.length === 0) {
+      const roles = Object.values(RoleEnum).map((roleName) => {
+        const role = this.roleRepository.create({
+          roleName,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        return role;
+      });
+      await this.roleRepository.save(roles);
+    }
+
     const account = await this.accountRepository.findOne({
       where: { username: process.env.USER_INIT },
     });
