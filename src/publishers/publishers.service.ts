@@ -77,7 +77,7 @@ export class PublishersService {
     }
   }
 
-  async findOne(id: number) {
+  async findOne(id: string) {
     let publisher: Publisher = null;
     try {
       publisher = await this.publisherRepository.findOne({
@@ -117,7 +117,7 @@ export class PublishersService {
     return ApiRes.success('Get publishers successfully', publishersResponse);
   }
 
-  async update(id: number, updatePublisherDto: UpdatePublisherDto) {
+  async update(id: string, updatePublisherDto: UpdatePublisherDto) {
     try {
       await this.publisherRepository.update(id, updatePublisherDto);
       return ApiRes.success('Cập nhật thành công nhà xuất bản');
@@ -129,7 +129,7 @@ export class PublishersService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     try {
       const publisher = await this.publisherRepository.findOne({
         where: { publisherId: id },

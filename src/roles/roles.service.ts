@@ -37,7 +37,7 @@ export class RolesService {
       .build();
   }
 
-  findOne(roleId: number): Promise<Role | null> {
+  findOne(roleId: string): Promise<Role | null> {
     return this.roleRepository.findOneBy({ roleId });
   }
 

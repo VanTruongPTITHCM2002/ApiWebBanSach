@@ -50,7 +50,7 @@ export class PublishersController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.publishersService.findOne(+id);
+    return this.publishersService.findOne(id);
   }
 
   @Patch(':id')
@@ -60,13 +60,13 @@ export class PublishersController {
     @Param('id') id: string,
     @Body() updatePublisherDto: UpdatePublisherDto,
   ) {
-    return this.publishersService.update(+id, updatePublisherDto);
+    return this.publishersService.update(id, updatePublisherDto);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   remove(@Param('id') id: string) {
-    return this.publishersService.remove(+id);
+    return this.publishersService.remove(id);
   }
 }
