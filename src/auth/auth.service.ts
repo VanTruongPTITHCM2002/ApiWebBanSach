@@ -132,7 +132,7 @@ export class AuthService {
         );
       }
 
-      if (!account.status) {
+      if (!account.isActive) {
         throw new ForbiddenException(MessageError.USER_NOT_LOGIN);
       }
     }
