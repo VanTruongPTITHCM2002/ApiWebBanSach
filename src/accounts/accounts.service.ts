@@ -31,7 +31,7 @@ export class AccountsService {
       ...rest,
       password: hashedPassword,
       roleId: role,
-      status: true,
+      isActive: true,
     });
 
     return await this.accountRepository.save(account);
@@ -42,7 +42,7 @@ export class AccountsService {
     const take = size;
     try {
       const accounts = await this.accountRepository.findAndCount({
-        where: { status: true },
+        where: { isActive: true },
         skip: skip,
         take: take,
       });
@@ -53,7 +53,7 @@ export class AccountsService {
             (account) =>
               new AccountResponse(
                 account.username,
-                convertStatus(account.status),
+                convertStatus(account.isActive),
                 account.createdAt.toLocaleString(),
               ),
           ),
@@ -76,7 +76,7 @@ export class AccountsService {
 
       const response = new AccountResponse(
         account.username,
-        convertStatus(account.status),
+        convertStatus(account.isActive),
         account.createdAt.toLocaleString(),
       );
       return ApiRes.success(`Thông tin tài khoản ${id}`, response);
@@ -103,7 +103,7 @@ export class AccountsService {
       });
       if (!account) return ApiRes.notFound('Không tìm thấy tài khoản');
 
-      account.status = false;
+      account.isActive = false;
       await this.accountRepository.save(account);
       return ApiRes.success('Xóa tài khoản thành công');
     } catch (err: any) {
