@@ -40,12 +40,12 @@ export class CartsController {
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCartDto: UpdateCartDto) {
-    return this.cartsService.update(+id, updateCartDto);
+    return this.cartsService.update(id, updateCartDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.cartsService.remove(+id);
+    return this.cartsService.remove(id);
   }
 }
