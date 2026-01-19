@@ -99,7 +99,7 @@ export class AuthorsService {
     return ApiRes.success('Lấy sách của tác giả thành công', author);
   }
 
-  async update(id: number, updateAuthorDto: UpdateAuthorDto) {
+  async update(id: string, updateAuthorDto: UpdateAuthorDto) {
     try {
       await this.authorRepository.update(id, updateAuthorDto);
       return ApiRes.success('Cập nhật tác giả thành công');
@@ -109,10 +109,10 @@ export class AuthorsService {
     }
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     try {
       const author = await this.authorRepository.findOne({
-        where: { authorId: id },
+        where: { id },
       });
 
       if (!author) return ApiRes.notFound('Không tìm thấy tác giả');
