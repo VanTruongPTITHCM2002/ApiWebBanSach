@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 import { Account } from '@/accounts/entities/account.entity';
 import { User } from '@/users/entities/user.entity';
 import { ApiRes } from '@/response/response.dto';
+import { MessageError } from '@/enum/message.error.enum';
 
 @Injectable()
 export class OrdersService {
@@ -174,6 +175,19 @@ export class OrdersService {
     } catch (error: any) {
       console.error(error.message);
       return ApiRes.internalServerError('Xóa đơn hàng thất bại');
+    }
+  }
+
+  async getSumOrders() {
+    try {
+      const orders = await this.orderRepository.find({
+        where: { isActive: true, workflowStatus: 1 },
+      });
+
+      return ApiRes.success('Lấy thành công số lương đơn hàng', orders.length);
+    } catch (error) {
+      console.error(error.message);
+      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
     }
   }
 }
