@@ -32,9 +32,14 @@ export class OrdersController {
     return this.ordersService.findAll(page, size);
   }
 
-  @Get(':id(\\d+)')
+  @Get(':id)')
   findOne(@Param('id') id?: string) {
     return this.ordersService.findOne(id);
+  }
+
+  @Get('/sum')
+  async getSumOrders() {
+    return this.ordersService.getSumOrders();
   }
 
   @Get('/orderDate')
