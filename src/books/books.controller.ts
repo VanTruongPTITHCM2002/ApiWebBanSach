@@ -124,6 +124,11 @@ export class BooksController {
     return this.booksService.findOne(id);
   }
 
+  @Get('/active')
+  getActiveBooks() {
+    return this.booksService.getActiveBooks();
+  }
+
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
