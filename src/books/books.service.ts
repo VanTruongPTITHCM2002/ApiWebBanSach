@@ -426,4 +426,22 @@ export class BooksService extends BaseService<Book> {
     } finally {
     }
   }
+
+  async getActiveBooks() {
+    try {
+      const books = await this.bookRepository.find({
+        where: {
+          isDeleted: true,
+        },
+      });
+
+      return ApiRes.success(
+        'Lấy thành công số lượng sách chưa xóa',
+        books.length,
+      );
+    } catch (error) {
+      console.error(error.message);
+      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
+    }
+  }
 }
