@@ -8,6 +8,7 @@ import { User } from '@/users/entities/user.entity';
 import { InvoiceItem } from '@/invoiceitem/entities/invoiceitem.entity';
 import { Order } from '@/orders/entities/order.entity';
 import { ApiRes } from '@/response/response.dto';
+import { MessageError } from '@/enum/message.error.enum';
 
 @Injectable()
 export class InvoiceService {
@@ -179,5 +180,22 @@ export class InvoiceService {
 
   remove(id: string) {
     return `This action removes a #${id} invoice`;
+  }
+
+  async getRevenueByInvoice() {
+    try {
+      const invoices = await this.invoiceRepository.find({
+        where: { isActive: true },
+      });
+
+      const sum = invoices.reduce(
+        (total, invoice) => total + invoice.totalAmount,
+        0,
+      );
+      return ApiRes.success('Tổng doanh thu từ hóa đơn', sum);
+    } catch (error) {
+      console.error(error.message);
+      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
+    }
   }
 }
