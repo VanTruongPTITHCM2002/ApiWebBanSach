@@ -12,6 +12,8 @@ import { Account } from '@/accounts/entities/account.entity';
 import { Book } from '@/books/entities/book.entity';
 import { Cartitem } from '@/cartitems/entities/cartitem.entity';
 import { ApiResponse } from '@/response/apires';
+import { ApiRes } from '@/response/response.dto';
+import { MessageError } from '@/enum/message.error.enum';
 
 @Injectable()
 export class OrderdetailService {
@@ -178,5 +180,31 @@ export class OrderdetailService {
 
   remove(id: number) {
     return `This action removes a #${id} orderdetail`;
+  }
+
+  async getTopFiveBooks() {
+    try {
+      const result = await this.orderDetailRepository
+        .createQueryBuilder('oi')
+        .innerJoin('oi.orderId', 'o')
+        .innerJoin('oi.books', 'b')
+        .select('b.bookid', 'bookId')
+        .addSelect('b.title', 'title')
+        .addSelect('SUM(oi.quantity)', 'totalSold')
+        .where('o.workflowStatus = :workflowStatus', { workflowStatus: 1 })
+        .andWhere('MONTH(o.createdAt) = MONTH(CURRENT_DATE())')
+        .andWhere('YEAR(o.createdAt) = YEAR(CURRENT_DATE())')
+        .groupBy('b.bookid')
+        .orderBy('totalSold', 'DESC')
+        .limit(5)
+        .getRawMany();
+      return ApiRes.success(
+        'Lấy thành công danh sách top 5 sách bán chạy',
+        result,
+      );
+    } catch (error) {
+      console.error(error.message);
+      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
+    }
   }
 }
