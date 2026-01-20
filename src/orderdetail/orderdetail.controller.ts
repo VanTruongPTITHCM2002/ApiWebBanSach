@@ -30,6 +30,11 @@ export class OrderdetailController {
     return this.orderdetailService.findOne(id);
   }
 
+  @Get('/top/books')
+  getTopBooks() {
+    return this.orderdetailService.getTopFiveBooks();
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,
