@@ -32,7 +32,7 @@ export class OrdersController {
     return this.ordersService.findAll(page, size);
   }
 
-  @Get(':id)')
+  @Get(':id')
   findOne(@Param('id') id?: string) {
     return this.ordersService.findOne(id);
   }
