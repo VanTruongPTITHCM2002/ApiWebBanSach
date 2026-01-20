@@ -15,6 +15,7 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt.guard';
 import { Roles } from '@/common/decorators/role.decorators';
 import { RolesGuard } from '@/common/guards/role.guard';
+import { RoleEnum } from '@/enum/role.enum';
 
 @Controller('invoice')
 export class InvoiceController {
@@ -35,6 +36,13 @@ export class InvoiceController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.invoiceService.findOne(id);
+  }
+
+  @Get('/revenue')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleEnum.ADMIN)
+  async getTotalRevenue() {
+    return this.invoiceService.getRevenueByInvoice();
   }
 
   @Patch(':id')
