@@ -17,7 +17,7 @@ import { JwtAuthGuard } from '@/common/guards/jwt.guard';
 import { Roles } from '@/common/decorators/role.decorators';
 import { FilterAuthorQueryDto } from './dto/filter-author-query-dto';
 
-@Controller('authors')
+@Controller('/api/v1/authors')
 export class AuthorsController {
   constructor(private readonly authorsService: AuthorsService) {}
 
@@ -51,6 +51,11 @@ export class AuthorsController {
   @Get(':authorName/books')
   findOneAuthorManyBook(@Param('authorName') authorName: string) {
     return this.authorsService.findOneAuthorManyBook(authorName);
+  }
+
+  @Get('/select')
+  selectAuthors() {
+    return this.authorsService.selectInfinityAuthor();
   }
 
   @Patch(':id')
