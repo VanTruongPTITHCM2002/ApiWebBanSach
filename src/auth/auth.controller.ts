@@ -15,12 +15,14 @@ import { Response } from 'express';
 import { ApiRes } from '@/response/response.dto';
 import { AuthResponse } from '@/response/auth.response';
 import { AuthGuard } from '@/common/guards/auth.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('/api/v1/auth')
 @ApiTags('Authentication')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @Post('login')
   @ApiOkResponse({ description: 'Đăng nhập tài khoản' })
   async login(
