@@ -25,7 +25,7 @@ import { MessageError } from '@/enum/message.error.enum';
 export class AuthService {
   private readonly logger = new Logger(AuthService.name, { timestamp: true });
 
-  static ATTRIBUTE_TOKEN = 'access_token';
+  static readonly ATTRIBUTE_TOKEN = 'access_token';
 
   constructor(
     private readonly jwtService: JwtService,
