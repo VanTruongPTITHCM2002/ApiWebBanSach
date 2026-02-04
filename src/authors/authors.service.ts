@@ -127,4 +127,19 @@ export class AuthorsService {
       return ApiRes.error('Không thể xóa tác giả');
     }
   }
+
+  async selectInfinityAuthor() {
+    const authors = await this.authorRepository.find({
+      where: { isActive: true },
+    });
+
+    const selectAuthors = authors.map((author) => {
+      return {
+        id: author.id,
+        name: author.firstname + ' ' + author.lastname,
+      };
+    });
+
+    return ApiRes.success('Lấy danh sách tác giả thành công', selectAuthors);
+  }
 }
