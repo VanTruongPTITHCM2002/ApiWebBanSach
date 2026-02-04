@@ -80,6 +80,11 @@ export class CategoriesController {
     );
   }
 
+  @Get('/select')
+  selectCategories() {
+    return this.categoriesService.selectInfinityCategories();
+  }
+
   @Patch(':id')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
