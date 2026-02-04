@@ -22,6 +22,8 @@ import { Account } from './accounts/entities/account.entity';
 import { AppService } from './app.service';
 import { ormConfig } from './config/ormconfig';
 import { LoogerMiddleware } from './common/middleware/logger.middleware';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -45,8 +47,22 @@ import { LoogerMiddleware } from './common/middleware/logger.middleware';
     OrderdetailModule,
     InvoiceitemModule,
     TypeOrmModule.forFeature([Role, Account]),
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60000,
+          limit: 5,
+        },
+      ],
+    }),
   ],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
