@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Book } from './entities/book.entity';
 import {
@@ -41,27 +47,12 @@ export class BooksService extends BaseService<Book> {
 
   async create(createBookDto: CreateBookDto, file: Express.Multer.File) {
     try {
+      this.log.log('Đang trong quá trình thêm sách...');
       const [author, publisher, category] = await Promise.all([
-        this.authorRepository
-          .createQueryBuilder('author')
-          .where("CONCAT(author.firstname, ' ', author.lastname) = :fullname", {
-            fullname: createBookDto.authorName,
-          })
-          .getOne(),
-        this.publisherRepository.findOne({
-          where: { publisherName: createBookDto.publisherName.toString() },
-        }),
-        this.categoryRepository.findOne({
-          where: { categoryName: createBookDto.categoryName.toString() },
-        }),
+        this.validateAuthor(createBookDto.authorId),
+        this.validatePublisher(createBookDto.publisherId),
+        this.validateCategory(createBookDto.categoryId),
       ]);
-
-      if (!author || !publisher || !category)
-        return ApiRes.notFound(
-          `Không tìm thấy: ${
-            !author ? 'Tác giả ' : ''
-          }${!publisher ? 'Nhà xuất bản ' : ''}${!category ? 'Thể loại ' : ''}`,
-        );
 
       const book = {
         title: createBookDto.title,
@@ -76,12 +67,53 @@ export class BooksService extends BaseService<Book> {
         link: createBookDto.link || '',
         createdAt: new Date(),
       };
-      await this.bookRepository.save(book);
-      return ApiRes.success('Thêm sách thành công');
+      this.log.debug('Đang trong quá trình thêm xuống database');
+      const saveBook = await this.bookRepository.save(book);
+      this.log.log(`Tạo sách thành công với id: ${saveBook.bookid}`);
+      return ApiRes.success(`Thêm sách ${createBookDto.title} thành công`);
     } catch (error) {
-      console.log(error.message);
-      return ApiRes.error('Không thể thêm sách');
+      console.error(error.message);
+      this.log.error(`Xảy ra lỗi trong quá trình thêm ${error}`);
+      if (error instanceof NotFoundException) {
+        return ApiRes.notFound(error.message);
+      }
+      throw new HttpException(
+        'Đã có lỗi xảy ra',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    } finally {
+      this.log.log('Kết thúc quá trình tạo sách');
     }
+  }
+
+  private async validateAuthor(id: string) {
+    const author = await this.authorRepository.findOne({
+      where: { id: id },
+    });
+    if (!author) {
+      throw new NotFoundException(`Không tìm thấy tác giả`);
+    }
+    return author;
+  }
+
+  private async validateCategory(id: string) {
+    const category = await this.categoryRepository.findOne({
+      where: { categoryId: id },
+    });
+    if (!category) {
+      throw new NotFoundException(`Không tìm thấy danh mục`);
+    }
+    return category;
+  }
+
+  private async validatePublisher(id: string) {
+    const publisher = await this.publisherRepository.findOne({
+      where: { publisherId: id },
+    });
+    if (!publisher) {
+      throw new NotFoundException(`Không tìm thấy nhà xuất bản`);
+    }
+    return publisher;
   }
 
   async findWithoutFilter(page: number, size: number) {
@@ -217,7 +249,7 @@ export class BooksService extends BaseService<Book> {
         skip: (page - 1) * size,
         take: size,
         where,
-        relations: ['authorId', 'category', 'publisherId'],
+        relations: ['authorId', 'category', 'publisher'],
       });
 
       const totalPages = Math.ceil(totalElements / size);
@@ -304,7 +336,7 @@ export class BooksService extends BaseService<Book> {
         .createQueryBuilder('book')
         .leftJoin('book.orderdetails', 'detail')
         .leftJoin('detail.orderId', 'order')
-        .where('order.status = :status', { status: 1 })
+        .where('order.workflowStatus = :status', { status: 1 })
         .select(['book', 'COUNT(*) AS order_count'])
         .groupBy('book.bookid')
         .getMany();
@@ -362,18 +394,9 @@ export class BooksService extends BaseService<Book> {
   async update(id: number, updateBookDto: UpdateBookDto) {
     try {
       const [author, publisher, category] = await Promise.all([
-        this.authorRepository
-          .createQueryBuilder('author')
-          .where("CONCAT(author.firstname, ' ', author.lastname) = :fullname", {
-            fullname: updateBookDto.authorName,
-          })
-          .getOne(),
-        this.publisherRepository.findOne({
-          where: { publisherName: updateBookDto.publisherName.toString() },
-        }),
-        this.categoryRepository.findOne({
-          where: { categoryName: updateBookDto.categoryName.toString() },
-        }),
+        this.validateAuthor(updateBookDto.authorId),
+        this.validatePublisher(updateBookDto.publisherId),
+        this.validateCategory(updateBookDto.categoryId),
       ]);
 
       await this.bookRepository.update(id, {
