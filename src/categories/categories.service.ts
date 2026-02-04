@@ -216,4 +216,22 @@ export class CategoriesService {
       return ApiRes.error(error.message, 'Thất bại');
     }
   }
+
+  async selectInfinityCategories() {
+    const categories = await this.categoryRepository.find({
+      where: { isActive: true },
+    });
+
+    const selectCategories = categories.map((category) => {
+      return {
+        id: category.categoryId,
+        name: category.categoryName,
+      };
+    });
+
+    return ApiRes.success(
+      'Lấy thành công danh sách thể loại',
+      selectCategories,
+    );
+  }
 }
