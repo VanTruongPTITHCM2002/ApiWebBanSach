@@ -94,7 +94,7 @@ export class CategoriesService {
     page?: number,
     size?: number,
     sort?: string,
-    publisherId?: string,
+    idPublisher?: string,
     minPrice?: string,
     maxPrice?: string,
   ) {
@@ -102,6 +102,7 @@ export class CategoriesService {
       const category = await this.categoryRepository.findOne({
         where: { categoryId: id },
       });
+
       if (!category) {
         throw new NotFoundException('Không tìm thấy danh mục');
       }
@@ -144,13 +145,16 @@ export class CategoriesService {
         priceCondition = { price: LessThanOrEqual(max) };
       }
 
+      const publisherId =
+        idPublisher && idPublisher !== 'null' ? idPublisher : undefined;
+
       const [books, totalElements] = await this.bookRepository.findAndCount({
         skip: (page - 1) * size,
         take: size,
         where: {
           category: { categoryId: id },
-          ...(publisherId !== null && {
-            publisher: { publisherId: publisherId },
+          ...(idPublisher !== null && {
+            publisher: { publisherId },
           }),
           ...priceCondition,
         },
@@ -165,11 +169,8 @@ export class CategoriesService {
         bookid: book.bookid,
         title: book.title,
         price: book.price,
-        link: book.link,
         authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
-        imageBase64: book.image
-          ? `data:image/jpeg;base64,${book.image.toString('base64')}`
-          : null,
+        thumbnail: book.thumbnail ? book.thumbnail : null,
       }));
       return ApiRes.success('Tìm thấy danh mục', {
         content: result,
