@@ -8,8 +8,6 @@ import {
   Delete,
   UseGuards,
   Query,
-  UseInterceptors,
-  UploadedFile,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -26,7 +24,6 @@ import {
   ApiProperty,
   ApiTags,
 } from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { FilterBookQueryDto } from './dto/filter-book-query.dto';
 import { JwtAuthGuard } from '@/common/guards/jwt.guard';
 import { RolesGuard } from '@/common/guards/role.guard';
@@ -47,13 +44,9 @@ export class BooksController {
   @ApiProperty({
     type: CreateBookDto,
   })
-  @UseInterceptors(FileInterceptor('image'))
   @HttpCode(HttpStatus.CREATED)
-  create(
-    @Body() createBookDto: CreateBookDto,
-    @UploadedFile() file: Express.Multer.File,
-  ) {
-    return this.booksService.create(createBookDto, file);
+  create(@Body() createBookDto: CreateBookDto) {
+    return this.booksService.create(createBookDto);
   }
 
   @Get()
@@ -141,7 +134,7 @@ export class BooksController {
     type: UpdateBookDto,
   })
   update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
-    return this.booksService.update(+id, updateBookDto);
+    return this.booksService.update(id, updateBookDto);
   }
 
   @Delete(':id')
