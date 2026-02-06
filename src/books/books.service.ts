@@ -45,7 +45,7 @@ export class BooksService extends BaseService<Book> {
     super(bookRepository, 'book');
   }
 
-  async create(createBookDto: CreateBookDto, file: Express.Multer.File) {
+  async create(createBookDto: CreateBookDto) {
     try {
       this.log.log('Đang trong quá trình thêm sách...');
       const [author, publisher, category] = await Promise.all([
@@ -56,21 +56,24 @@ export class BooksService extends BaseService<Book> {
 
       const book = {
         title: createBookDto.title,
-        authorId: author,
-        category: category,
-        publisherId: publisher,
         price: createBookDto.price,
         stock: createBookDto.stock,
+        thumbnail: createBookDto.thumbnail,
+        authorId: author,
+        category: category,
+        publisher: publisher,
         isDeleted: false,
         status: true,
-        image: file?.buffer,
-        link: createBookDto.link || '',
+        images: [...new Set(createBookDto.images)],
         createdAt: new Date(),
       };
       this.log.debug('Đang trong quá trình thêm xuống database');
       const saveBook = await this.bookRepository.save(book);
       this.log.log(`Tạo sách thành công với id: ${saveBook.bookid}`);
-      return ApiRes.success(`Thêm sách ${createBookDto.title} thành công`);
+      return ApiRes.success(
+        `Thêm sách ${createBookDto.title} thành công`,
+        saveBook,
+      );
     } catch (error) {
       console.error(error.message);
       this.log.error(`Xảy ra lỗi trong quá trình thêm ${error}`);
@@ -129,10 +132,10 @@ export class BooksService extends BaseService<Book> {
 
       const totalPages = Math.ceil(totalElements / size);
       const booksWithBase64 = books.map((book) => {
-        let imageBase64 = null;
+        let imagesBase64 = null;
 
-        if (book.image && book.image instanceof Buffer) {
-          imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
+        if (book.images && book.images instanceof Buffer) {
+          imagesBase64 = `data:images/jpeg;base64,${book.images.toString('base64')}`;
         }
 
         return {
@@ -142,8 +145,7 @@ export class BooksService extends BaseService<Book> {
           price: book.price,
           stock: book.stock,
           status: book.status,
-          imageBase64,
-          link: book.link,
+          imagesBase64,
           authorName: `${book.authorId.firstname} ${book.authorId.lastname}`,
           categoryName: book.category.categoryName,
           publisherName: book.publisher.publisherName,
@@ -173,20 +175,20 @@ export class BooksService extends BaseService<Book> {
   async findAllWithBase64(query: BaseFilterDto): Promise<ApiRes<any>> {
     const paginated = await super.findAll(query);
 
-    // convert image sang base64
+    // convert images sang base64
     const paginatedWithBase64 = {
       ...paginated,
       items: paginated.items.map((book) => {
-        let imageBase64 = null;
-        if (book.image && book.image instanceof Buffer) {
-          imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
+        let imagesBase64 = null;
+        if (book.images && book.images instanceof Buffer) {
+          imagesBase64 = `data:images/jpeg;base64,${book.images.toString('base64')}`;
         }
         return {
           ...book,
           authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
           categoryName: book.category.categoryName,
           publisherName: book.publisher.publisherName,
-          imageBase64,
+          imagesBase64,
         };
       }),
     };
@@ -254,13 +256,7 @@ export class BooksService extends BaseService<Book> {
 
       const totalPages = Math.ceil(totalElements / size);
 
-      const booksWithBase64 = books.map((book) => {
-        let imageBase64 = null;
-
-        if (book.image && book.image instanceof Buffer) {
-          imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
-        }
-
+      const booksPaginate = books.map((book) => {
         return {
           bookid: book.bookid,
           title: book.title,
@@ -268,8 +264,8 @@ export class BooksService extends BaseService<Book> {
           price: book.price,
           stock: book.stock,
           status: book.status,
-          imageBase64,
-          link: book.link,
+          images: book.images,
+          thumbnail: book.thumbnail,
           authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
           categoryName: book.category.categoryName,
           publisherName: book.publisher.publisherName,
@@ -277,7 +273,7 @@ export class BooksService extends BaseService<Book> {
       });
 
       return ApiRes.success('Hiện danh sách sách thành công', {
-        content: booksWithBase64,
+        content: booksPaginate,
         page,
         size,
         totalElements,
@@ -302,10 +298,10 @@ export class BooksService extends BaseService<Book> {
         relations: ['authorId', 'publisher', 'category'],
       });
 
-      let imageBase64 = null;
+      let imagesBase64 = null;
 
-      if (book.image && book.image instanceof Buffer) {
-        imageBase64 = `data:image/jpeg;base64,${book.image.toString('base64')}`;
+      if (book.images && book.images instanceof Buffer) {
+        imagesBase64 = `data:images/jpeg;base64,${book.images.toString('base64')}`;
       }
 
       return ApiRes.success('Hiện thông tin sách thành công', {
@@ -315,11 +311,15 @@ export class BooksService extends BaseService<Book> {
         price: book.price,
         stock: book.stock,
         status: book.status,
-        imageBase64,
-        link: book.link,
+        imagesBase64,
+        authorId: book.authorId.id,
         authorName: book.authorId.firstname + ' ' + book.authorId.lastname,
         categoryName: book.category.categoryName,
+        categoryId: book.category.categoryId,
         publisherName: book.publisher.publisherName,
+        publisherId: book.publisher.publisherId,
+        thumbnail: book.thumbnail,
+        images: book.images,
       });
     } catch (error) {
       console.log(error.message);
@@ -391,7 +391,7 @@ export class BooksService extends BaseService<Book> {
     }
   }
 
-  async update(id: number, updateBookDto: UpdateBookDto) {
+  async update(id: string, updateBookDto: UpdateBookDto) {
     try {
       const [author, publisher, category] = await Promise.all([
         this.validateAuthor(updateBookDto.authorId),
@@ -406,7 +406,9 @@ export class BooksService extends BaseService<Book> {
         publisher: { publisherId: publisher.publisherId },
         price: updateBookDto.price,
         stock: updateBookDto.stock,
-        link: updateBookDto.link,
+        images: [...new Set(updateBookDto.images)],
+        thumbnail: updateBookDto.thumbnail,
+        updatedAt: new Date(),
       });
       return ApiRes.success('Cập nhật sách thành công');
     } catch (error) {
