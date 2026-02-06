@@ -151,7 +151,7 @@ export class InvoiceService {
           totalLine: it.totalLine,
           bookid: it.book.bookid,
           title: it.book.title,
-          image: it.book.link,
+          image: it.book.thumbnail,
         })),
       });
     } catch (error) {
