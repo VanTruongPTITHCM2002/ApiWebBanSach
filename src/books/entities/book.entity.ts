@@ -19,7 +19,7 @@ export class Book extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   bookid: string;
 
-  @Column({ length: 45 })
+  @Column({ length: 100 })
   title: string;
 
   @Column()
@@ -55,9 +55,9 @@ export class Book extends BaseEntity {
   @Column()
   status: boolean;
 
-  @Column({ type: 'mediumblob', nullable: true })
-  image: Buffer;
+  @Column({ nullable: true })
+  thumbnail: string;
 
-  @Column({ default: '' })
-  link: string;
+  @Column({ type: 'json', nullable: true })
+  images: string[];
 }
