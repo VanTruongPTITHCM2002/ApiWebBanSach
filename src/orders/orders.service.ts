@@ -105,7 +105,7 @@ export class OrdersService {
         ...order,
         orderdetails: order.orderdetails.map((d) => ({
           orderdetailId: d.orderdetailId,
-          image: d.books.link,
+          thumbnail: d.books.thumbnail,
           quantity: d.quantity,
           price: d.price,
           title: d.books.title,
