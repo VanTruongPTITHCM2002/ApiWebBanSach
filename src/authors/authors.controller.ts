@@ -53,7 +53,7 @@ export class AuthorsController {
     return this.authorsService.findOneAuthorManyBook(authorName);
   }
 
-  @Get('/select')
+  @Get('select/infinity')
   selectAuthors() {
     return this.authorsService.selectInfinityAuthor();
   }
