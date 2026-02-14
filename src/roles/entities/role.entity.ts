@@ -7,7 +7,7 @@ export class Role extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   roleId: string;
 
-  @Column({ length: 45 })
+  @Column({ length: 45, unique: true })
   roleName: string;
 
   @OneToMany(() => Account, (account) => account.roleId)
