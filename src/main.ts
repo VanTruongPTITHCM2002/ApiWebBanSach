@@ -6,6 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 // import { ApiExceptionFilter } from './common/filters/api.filter';
 import * as cookieParser from 'cookie-parser';
+import { GlobalHandlerException } from './common/exception/global-exception';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,13 +32,13 @@ app.useGlobalPipes(
       return new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
         message: 'Validation failed',
-        errors: formattedErrors
+        formattedErrors,
       });
     },
   }),
 );
 
-// app.useGlobalFilters(new ApiExceptionFilter());
+app.useGlobalFilters(new GlobalHandlerException());
 const config = new DocumentBuilder()
 .setTitle('Bookshop API')
 .setDescription('The API Bookshop description')
