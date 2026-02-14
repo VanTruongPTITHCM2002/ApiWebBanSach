@@ -74,7 +74,7 @@ export class BooksService extends BaseService<Book> {
         `Thêm sách ${createBookDto.title} thành công`,
         saveBook,
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error(error.message);
       this.log.error(`Xảy ra lỗi trong quá trình thêm ${error}`);
       if (error instanceof NotFoundException) {
