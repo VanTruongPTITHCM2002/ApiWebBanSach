@@ -15,8 +15,8 @@ export class AppService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    const rolesOrigin = await this.roleRepository.find();
-    if (rolesOrigin.length === 0) {
+    const roleExists = await this.roleRepository.exists();
+    if (!roleExists) {
       const roles = Object.values(RoleEnum).map((roleName) => {
         const role = this.roleRepository.create({
           roleName,
@@ -28,16 +28,17 @@ export class AppService implements OnModuleInit {
       await this.roleRepository.save(roles);
     }
 
-    const account = await this.accountRepository.findOne({
+    const accountExists = await this.accountRepository.exists({
       where: { username: process.env.USER_INIT },
     });
 
-    if (account) {
+    if (accountExists) {
       return;
     }
 
     const role = await this.roleRepository.findOne({
       where: { roleName: RoleEnum.ADMIN },
+      select: ['roleId'],
     });
 
     const newAccount = this.accountRepository.create({
@@ -46,7 +47,7 @@ export class AppService implements OnModuleInit {
       createdAt: new Date(),
       updatedAt: new Date(),
       isActive: true,
-      roleId: role,
+      roleId: { roleId: role.roleId },
     });
 
     await this.accountRepository.save(newAccount);
