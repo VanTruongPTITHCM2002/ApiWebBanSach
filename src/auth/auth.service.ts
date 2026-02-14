@@ -1,10 +1,10 @@
+import { UnauthorizedException } from './../common/exception/unauthorized.exception';
 import {
   BadRequestException,
   ForbiddenException,
   Injectable,
   Logger,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -20,6 +20,7 @@ import { ApiRes } from '@/response/response.dto';
 import { AuthResponse } from '@/response/auth.response';
 import { MessageSuccess } from '@/enum/message.success.enum';
 import { MessageError } from '@/enum/message.error.enum';
+import { ConflictException } from '@/common/exception/conflict.exception';
 
 @Injectable()
 export class AuthService {
@@ -44,16 +45,13 @@ export class AuthService {
       const account = await this.getAccountByUsername(signUpDto.username, true);
       this.validateUsernameExsists(account);
       this.validateMatchPassword(signUpDto.password, signUpDto.repassword);
-
       const { username, password } = signUpDto;
-
       await this.accountService.create({
         username,
         password,
       });
-
       return ApiRes.created(
-        `Tài khoản ${signUpDto.username} đã được tạo thành công`,
+        `${MessageSuccess.USER_CREATED_SUCESS} ${username}`,
       );
     } catch (error: any) {
       this.logger.log(error.message);
@@ -75,38 +73,11 @@ export class AuthService {
     res: Response,
     rememberMe: boolean,
   ): Promise<ApiRes<string | AuthResponse>> {
-    this.logger.log('Bắt đầu thực hiện đăng nhập với tài khoản: ', username);
-    try {
-      const account = await this.getAccountByUsername(username);
-
-      await this.checkPassword(password, account.password);
-
-      const token = await this.generateToken(account);
-
-      this.setTokenCookie(res, token, rememberMe);
-
-      return ApiRes.success(MessageSuccess.LOGIN_SUCCESS);
-    } catch (error: any) {
-      this.logger.log(
-        `Xảy ra lỗi khi đăng nhập tài khoản ${username} : `,
-        error.message,
-      );
-      if (error instanceof NotFoundException) {
-        return ApiRes.notFound(error.message);
-      }
-
-      if (error instanceof ForbiddenException) {
-        return ApiRes.forbidden(error.message);
-      }
-
-      if (error instanceof UnauthorizedException) {
-        return ApiRes.unauthorized(error.message);
-      }
-
-      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
-    } finally {
-      this.logger.log(`Kết thúc quá trình đăng nhập với tài khoản ${username}`);
-    }
+    const account = await this.getAccountByUsername(username);
+    await this.checkPassword(password, account.password);
+    const token = await this.generateToken(account);
+    this.setTokenCookie(res, token, rememberMe);
+    return ApiRes.success(MessageSuccess.LOGIN_SUCCESS);
   }
 
   async logout(res: Response) {
@@ -169,13 +140,15 @@ export class AuthService {
 
   validateUsernameExsists(account: Account) {
     if (account) {
-      throw new BadRequestException(`Tài khoản ${account.username} đã tồn tại`);
+      throw new ConflictException(
+        `${MessageError.USER_EXISTED} ${account.username}`,
+      );
     }
   }
 
   validateMatchPassword(password: string, repassword: string) {
     if (password !== repassword) {
-      throw new BadRequestException('Mật khẩu không trùng khớp');
+      throw new UnauthorizedException(MessageError.PASSWORD_NOT_MATCH);
     }
   }
 }
