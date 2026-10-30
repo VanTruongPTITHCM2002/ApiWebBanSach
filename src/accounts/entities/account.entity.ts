@@ -14,8 +14,8 @@ import {
 
 @Entity('accounts')
 export class Account extends BaseEntity {
-  @PrimaryGeneratedColumn()
-  accountId: number;
+  @PrimaryGeneratedColumn('uuid')
+  accountId: string;
 
   @OneToOne(() => User, (user) => user.accountFK)
   user: User;
