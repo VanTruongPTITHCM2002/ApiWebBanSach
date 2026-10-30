@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
+import { BaseHttpException, ExceptionDetails } from './base.exception';
 
-export class UnsupportedMediaTypeException extends HttpException {
-  constructor(message: string) {
-    super(message, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
+export class UnsupportedMediaTypeException extends BaseHttpException {
+  constructor(message: string, details?: ExceptionDetails) {
+    super(message, HttpStatus.UNSUPPORTED_MEDIA_TYPE, details);
   }
 }

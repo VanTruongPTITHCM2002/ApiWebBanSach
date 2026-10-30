@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
+import { BaseHttpException, ExceptionDetails } from './base.exception';
 
-export class GoneException extends HttpException {
-  constructor(message: string) {
-    super(message, HttpStatus.GONE);
+export class GoneException extends BaseHttpException {
+  constructor(message: string, details?: ExceptionDetails) {
+    super(message, HttpStatus.GONE, details);
   }
 }
