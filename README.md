@@ -71,3 +71,19 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+## Mock data
+
+Tạo một bộ dữ liệu mẫu nhỏ (2 người dùng, 2 tác giả, 2 nhà xuất bản, 2 thể loại,
+4 sách, 2 giỏ hàng, 2 đơn hàng, 2 hóa đơn và 3 đánh giá):
+
+```bash
+$ npm run seed
+```
+
+Script có thể chạy lặp lại mà không sinh dữ liệu trùng. Tài khoản demo:
+
+| Username     | Password   | Role |
+| ------------ | ---------- | ---- |
+| `nguyenvana` | `user1234` | USER |
+| `tranthib`   | `user1234` | USER |
