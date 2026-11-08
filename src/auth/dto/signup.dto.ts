@@ -16,7 +16,7 @@ export class SignUpDto {
   @MinLength(3, { message: 'Tên đăng nhập phải có ít nhất 3 ký tự' })
   @MaxLength(40, { message: 'Tên đăng nhập tối đa 40 ký tự' })
   username: string;
-  @ApiProperty({ example: 'mypassword', description: 'Mật khẩu' })
+  @ApiProperty({ example: 'Mypassword123@', description: 'Mật khẩu' })
   @IsDefined({ message: 'Mật khẩu là bắt buộc' })
   @IsStrongPassword({
     minLength: 8,
@@ -28,7 +28,7 @@ export class SignUpDto {
   @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
   @MinLength(8, { message: 'Mật khẩu phải có ít nhất 8 ký tự' })
   password: string;
-  @ApiProperty({ example: 'mypassword', description: 'Mật khẩu' })
+  @ApiProperty({ example: 'Mypassword123@', description: 'Mật khẩu' })
   @IsString({ message: 'Mật khẩu phải là chuỗi' })
   @IsNotEmpty({ message: 'Mật khẩu không được để trống' })
   @MinLength(8, { message: 'Mật khẩu phải có ít nhất 8 ký tự' })

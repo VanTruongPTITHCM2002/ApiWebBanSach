@@ -1,182 +1,94 @@
-import { ApiResponse } from './../response/apires';
-import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCartDto } from './dto/create-cart.dto';
 import { UpdateCartDto } from './dto/update-cart.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Cart } from './entities/cart.entity';
-import { Builder } from 'builder-pattern';
-import { Account } from '@/accounts/entities/account.entity';
-import { User } from '@/users/entities/user.entity';
+import { ApiRes } from '@/response/response.dto';
+import { CartsRepository } from './repositories/carts.repository';
+import { AccountsRepository } from '@/accounts/repositories/accounts.repository';
+import { UsersRepository } from '@/users/repositories/users.repository';
+import { CartMapper } from './mappers/cart.mapper';
 
 @Injectable()
 export class CartsService {
   constructor(
-    @InjectRepository(Cart)
-    private readonly cartRepository: Repository<Cart>,
-    @InjectRepository(Account)
-    private readonly accountRepository: Repository<Account>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly cartRepository: CartsRepository,
+    private readonly accountRepository: AccountsRepository,
+    private readonly userRepository: UsersRepository,
+    private readonly cartMapper: CartMapper,
   ) {}
 
   async create(createCartDto: CreateCartDto) {
-    try {
-      const account = await this.accountRepository.findOne({
-        where: { username: createCartDto.username },
-      });
-      if (!account) {
-        throw new NotFoundException('Không tìm thấy tài khoản này');
-      }
+    const account = await this.accountRepository.findByUsername(
+      createCartDto.username,
+    );
 
-      const user = await this.userRepository.findOne({
-        where: { accountFK: { accountId: account.accountId } },
-      });
-      if (!user) {
-        throw new NotFoundException(
-          'Không tìm thấy user tương thích với tài khoản',
-        );
-      }
-      const cart = await this.cartRepository.create({
-        usersId: user,
-        createAt: createCartDto.createAt,
-        isActive: true,
-      });
-      await this.cartRepository.save(cart);
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.CREATED)
-        .message('Tạo giỏ hàng thành công')
-        .build();
-    } catch (error: any) {
-      if (error instanceof NotFoundException) {
-        return Builder<ApiResponse<any>>()
-          .statusCode(HttpStatus.NOT_FOUND)
-          .message(error.message)
-          .build();
-      }
-      console.log(error);
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Lỗi xảy ra từ cơ sở dữ liệu....')
-        .build();
+    if (!account) {
+      throw new NotFoundException('Không tìm thấy tài khoản này');
     }
+
+    const user = await this.userRepository.findOrCreateProfile(account);
+
+    await this.cartRepository.create({
+      usersId: user,
+      createAt: createCartDto.createAt,
+      isActive: true,
+    });
+
+    return ApiRes.created('Tạo giỏ hàng thành công');
   }
 
   async findAll() {
-    try {
-      const carts = await this.cartRepository.find();
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Láy danh sách giỏ hàng của tất cả tài khoản')
-        .data(carts)
-        .build();
-    } catch (error: any) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Lỗi xảy ra từ cơ sở dữ liệu....')
-        .build();
-    }
+    const carts = await this.cartRepository.findMany();
+
+    return ApiRes.success('Láy danh sách giỏ hàng của tất cả tài khoản', carts);
   }
 
   async findOne(username: string) {
-    try {
-      const account = await this.accountRepository.findOne({
-        where: { username: username },
-      });
-      if (!account) {
-        throw new NotFoundException('Không tìm thấy tài khoản này');
-      }
-      const user = await this.userRepository.findOne({
-        where: {
-          accountFK: {
-            username: account.username,
-          },
-        },
-      });
-      if (!user) {
-        throw new NotFoundException(
-          'Không tìm thấy user tương thích với tài khoản',
-        );
-      }
-      const cart = await this.cartRepository.findOne({
-        where: {
-          usersId: {
-            usersId: user.usersId,
-          },
-        },
-        relations: ['cartItemId', 'cartItemId.bookId'],
-      });
+    const account = await this.accountRepository.findByUsername(username);
 
-      const result = {
-        cartId: cart.cartId,
-        createAt: cart.createAt,
-        status: cart.isActive,
-        cartItems: cart.cartItemId.map((item) => ({
-          cartItemId: item.cartitemId,
-          quantity: item.quantity,
-          price: item.price,
-          title: item.bookId.title,
-        })),
-      };
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Danh sách giỏ hàng của ' + username)
-        .data(result)
-        .build();
-    } catch (error: any) {
-      console.log(error);
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Lỗi xảy ra từ cơ sở dữ liệu....')
-        .build();
+    if (!account) {
+      throw new NotFoundException('Không tìm thấy tài khoản này');
     }
+
+    const user = await this.userRepository.findOrCreateProfile(account);
+    const cart = await this.cartRepository.findActiveByUserId(user.usersId);
+
+    if (!cart) {
+      return ApiRes.success(
+        'Giỏ hàng trống',
+        this.cartMapper.toEmptyResponse(),
+      );
+    }
+
+    return ApiRes.success(
+      'Danh sách giỏ hàng của ' + username,
+      this.cartMapper.toResponse(cart),
+    );
   }
 
   async update(id: string, updateCartDto: UpdateCartDto) {
-    try {
-      const cart = await this.cartRepository.findOne({ where: { cartId: id } });
-      if (!cart) {
-        throw new NotFoundException('Không tìm thấy giỏ hàng này');
-      }
-      cart.createAt = updateCartDto.createAt;
-      cart.isActive = updateCartDto.status === 'Đang chờ' ? false : true;
-      this.cartRepository.save(cart);
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Cập nhật thành công trạng thái giỏ hàng')
-        .build();
-    } catch (error: any) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Lỗi xảy ra từ cơ sở dữ liệu....')
-        .build();
+    const cart = await this.cartRepository.findById(id);
+
+    if (!cart) {
+      throw new NotFoundException('Không tìm thấy giỏ hàng này');
     }
+
+    cart.createAt = updateCartDto.createAt;
+    cart.isActive = updateCartDto.status === 'Đang chờ' ? false : true;
+
+    await this.cartRepository.save(cart);
+
+    return ApiRes.success('Cập nhật thành công trạng thái giỏ hàng');
   }
 
   async remove(id: string) {
-    try {
-      const cart = await this.cartRepository.findOne({
-        where: { cartId: id },
-      });
-      if (!cart) {
-        throw new NotFoundException('Không tìm thấy giỏ hàng này');
-      }
-      await this.cartRepository.delete(cart);
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.OK)
-        .message('Xóa giỏ hàng thành công')
-        .build();
-    } catch (error: any) {
-      if (error instanceof NotFoundException) {
-        return Builder<ApiResponse<any>>()
-          .statusCode(HttpStatus.NOT_FOUND)
-          .message(error.message)
-          .build();
-      }
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Lỗi xảy ra từ cơ sở dữ liệu....')
-        .build();
+    const cart = await this.cartRepository.findById(id);
+
+    if (!cart) {
+      throw new NotFoundException('Không tìm thấy giỏ hàng này');
     }
+
+    await this.cartRepository.deleteById(cart.cartId);
+
+    return ApiRes.success('Xóa giỏ hàng thành công');
   }
 }

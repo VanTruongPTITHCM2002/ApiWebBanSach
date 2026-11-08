@@ -5,4 +5,5 @@ export enum MessageError {
   USER_INCORRECT = 'Tài khoản hoặc mật khẩu không đúng',
   PASSWORD_NOT_MATCH = 'Mật khẩu không trùng khớp',
   USER_EXISTED = 'Tài khoản đã tồn tại',
+  TOO_MANY_REQUEST = 'Bạn đã gửi quá nhiều yêu cầu xin vui lòng đợi sau',
 }

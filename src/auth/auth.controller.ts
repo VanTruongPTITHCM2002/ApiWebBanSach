@@ -14,7 +14,7 @@ import { LoginDto } from './dto/login.dto';
 import { Response } from 'express';
 import { ApiRes } from '@/response/response.dto';
 import { AuthResponse } from '@/response/auth.response';
-import { AuthGuard } from '@/common/guards/auth.guard';
+import { JwtAuthGuard } from '@/common/guards/jwt.guard';
 import { Throttle } from '@nestjs/throttler';
 
 @Controller('/api/v1/auth')
@@ -22,7 +22,7 @@ import { Throttle } from '@nestjs/throttler';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post('login')
   @ApiOkResponse({ description: 'Đăng nhập tài khoản' })
   async login(
@@ -52,9 +52,8 @@ export class AuthController {
   }
 
   @Get('status')
-  @UseGuards(AuthGuard)
-  getStatus(@Req() req) {
-    console.log(req);
-    return { authenticated: true };
+  @UseGuards(JwtAuthGuard)
+  getStatus(@Req() req: any) {
+    return { authenticated: true, username: req.user?.sub };
   }
 }

@@ -1,7 +1,7 @@
-import { IsInt, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsUUID, Min } from 'class-validator';
 
 export class CreateInvoiceItemDto {
-  @IsInt()
+  @IsUUID('4')
   bookId: string;
 
   @IsInt()

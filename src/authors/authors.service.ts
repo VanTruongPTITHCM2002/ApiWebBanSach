@@ -1,144 +1,89 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAuthorDto } from './dto/create-author.dto';
 import { UpdateAuthorDto } from './dto/update-author.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Author } from './entities/author.entity';
-import { ILike, Repository } from 'typeorm';
 import { ApiRes } from '@/response/response.dto';
 import { FilterAuthorQueryDto } from './dto/filter-author-query-dto';
+import { AuthorsRepository } from './repositories/authors.repository';
+import { AuthorMapper } from './mappers/author.mapper';
 
 @Injectable()
 export class AuthorsService {
   constructor(
-    @InjectRepository(Author)
-    private readonly authorRepository: Repository<Author>,
+    private readonly authorRepository: AuthorsRepository,
+    private readonly authorMapper: AuthorMapper,
   ) {}
+
   async create(createAuthorDto: CreateAuthorDto) {
-    try {
-      let authorName = await this.authorRepository.findOne({
-        where: {
-          firstname: createAuthorDto.firstname,
-          lastname: createAuthorDto.lastname,
-        },
-      });
-      if (authorName) return ApiRes.badRequest('Tác giả đã tồn tại');
+    const authorName = await this.authorRepository.findByName(
+      createAuthorDto.firstname,
+      createAuthorDto.lastname,
+    );
 
-      authorName = await this.authorRepository.save(createAuthorDto);
-
-      return ApiRes.created('Thêm tác giả thành công', authorName);
-    } catch (error) {
-      return ApiRes.internalServerError('Thêm tác giả thất bại');
+    if (authorName) {
+      throw new BadRequestException('Tác giả đã tồn tại');
     }
+
+    const author = await this.authorRepository.create(createAuthorDto);
+
+    return ApiRes.created('Thêm tác giả thành công', author);
   }
 
   async findAll(page: number, size: number, filters: FilterAuthorQueryDto) {
-    const skip = (page - 1) * size;
-    const take = size;
-    let where: any = {};
-
-    if (filters) {
-      if (filters.search) {
-        where = [
-          { firstname: ILike(`%${filters.search}%`) },
-          { lastname: ILike(`%${filters.search}%`) },
-          { country: ILike(`%${filters.search}%`) },
-        ];
-      }
-    }
-
-    try {
-      const [authors, totalElements] = await this.authorRepository.findAndCount(
-        {
-          skip,
-          take,
-          where,
-        },
-      );
-
-      const totalPages = Math.ceil(totalElements / size);
-      return ApiRes.success('Danh sách tác giả', {
-        content: authors,
-        page,
-        size,
-        totalElements,
-        totalPages,
-        first: page === 1,
-        last: page >= totalPages,
-      });
-    } catch (error) {
-      console.log(error.message);
-      return ApiRes.error('Lấy danh sách tác giả thất bại');
-    }
+    const result = await this.authorRepository.findPage(page, size, filters);
+    return ApiRes.success('Danh sách tác giả', result);
   }
 
   async findOne(id: string) {
-    try {
-      const author: Author[] = await this.authorRepository
-        .createQueryBuilder('author')
-        .where('author.firstName like :name', { name: '%' + id + '%' })
-        .getMany();
-      if (author.length === 0) return ApiRes.notFound('Không tìm thấy tác giả');
+    const authors = await this.authorRepository.findByNameContaining(id);
 
-      return ApiRes.success('Tìm tác giả thành công', author);
-    } catch (error) {
-      console.log(error.message);
-      return ApiRes.error('Không thể tìm kiếm tác giả');
+    if (authors.length === 0) {
+      throw new NotFoundException('Không tìm thấy tác giả');
     }
+
+    return ApiRes.success('Tìm tác giả thành công', authors);
   }
 
   async findOneAuthorManyBook(authorName: string) {
-    const author = await this.authorRepository.findOne({
-      where: {
-        lastname: authorName,
-      },
-      relations: ['books'],
-    });
+    const author =
+      await this.authorRepository.findByLastNameWithBooks(authorName);
 
-    if (!author) return ApiRes.badRequest('Tác giả không tồn tại');
+    if (!author) {
+      throw new BadRequestException('Tác giả không tồn tại');
+    }
 
     return ApiRes.success('Lấy sách của tác giả thành công', author);
   }
 
   async update(id: string, updateAuthorDto: UpdateAuthorDto) {
-    try {
-      await this.authorRepository.update(id, updateAuthorDto);
-      return ApiRes.success('Cập nhật tác giả thành công');
-    } catch (error) {
-      console.log(error.message);
-      return ApiRes.error('Không thể cập nhật tác giả');
-    }
+    await this.authorRepository.updateById(id, updateAuthorDto);
+    return ApiRes.success('Cập nhật tác giả thành công');
   }
 
   async remove(id: string) {
-    try {
-      const author = await this.authorRepository.findOne({
-        where: { id },
-      });
+    const author = await this.authorRepository.findByIdWithBooks(id);
 
-      if (!author) return ApiRes.notFound('Không tìm thấy tác giả');
-
-      if (author.books?.length > 0) {
-        return ApiRes.badRequest('Không thể xóa tác giả');
-      }
-
-      await this.authorRepository.delete(id);
-      return ApiRes.success('Xóa tác giả thành công');
-    } catch (error) {
-      return ApiRes.error('Không thể xóa tác giả');
+    if (!author) {
+      throw new NotFoundException('Không tìm thấy tác giả');
     }
+
+    if (author.books?.length > 0) {
+      throw new BadRequestException('Không thể xóa tác giả');
+    }
+
+    await this.authorRepository.deleteById(id);
+    return ApiRes.success('Xóa tác giả thành công');
   }
 
   async selectInfinityAuthor() {
-    const authors = await this.authorRepository.find({
-      where: { isActive: true },
-    });
+    const authors = await this.authorRepository.findActive();
 
-    const selectAuthors = authors.map((author) => {
-      return {
-        id: author.id,
-        name: author.firstname + ' ' + author.lastname,
-      };
-    });
+    const selectAuthors = authors.map((author) =>
+      this.authorMapper.toOption(author),
+    );
 
     return ApiRes.success('Lấy danh sách tác giả thành công', selectAuthors);
   }

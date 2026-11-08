@@ -39,7 +39,6 @@ export class PublishersController {
     @Query() query: filterPublisherQueryDto,
   ) {
     const { page: _p, size: _s, ...filters } = query;
-    console.log(_p, _s);
     return this.publishersService.findAll(page, size, filters);
   }
 

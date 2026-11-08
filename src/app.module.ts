@@ -1,4 +1,4 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 
 import { EmployeesModule } from './employees/employees.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -17,21 +17,20 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { CartitemsModule } from './cartitems/cartitems.module';
 import { OrderdetailModule } from './orderdetail/orderdetail.module';
 import { InvoiceitemModule } from './invoiceitem/invoiceitem.module';
-import { Role } from './roles/entities/role.entity';
-import { Account } from './accounts/entities/account.entity';
 import { AppService } from './app.service';
 import { ormConfig } from './config/ormconfig';
-import { LoogerMiddleware } from './common/middleware/logger.middleware';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/throttler.guard';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { RepositoriesModule } from './repositories/repositories.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: async () => ormConfig,
     }),
+    RepositoriesModule,
     EmployeesModule,
     UsersModule,
     RolesModule,
@@ -48,7 +47,6 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     CartitemsModule,
     OrderdetailModule,
     InvoiceitemModule,
-    TypeOrmModule.forFeature([Role, Account]),
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -70,8 +68,4 @@ import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
     },
   ],
 })
-export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoogerMiddleware).forRoutes('/api/v1/books');
-  }
-}
+export class AppModule {}

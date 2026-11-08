@@ -1,7 +1,9 @@
 import { Book } from '@/books/entities/book.entity';
 import { BaseEntity } from '@/common/base.entity';
+import { CodePrefix, generateCode } from '@/common/helpers/code.helper';
 import { Invoice } from '@/invoice/entities/invoice.entity';
 import {
+  BeforeInsert,
   Column,
   Entity,
   JoinColumn,
@@ -13,6 +15,9 @@ import {
 export class InvoiceItem extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   invoiceitemId: string;
+
+  @Column({ length: 32, unique: true, nullable: true })
+  invoiceItemCode: string;
 
   @Column({ type: 'int' })
   quantity: number;
@@ -33,4 +38,9 @@ export class InvoiceItem extends BaseEntity {
   @ManyToOne(() => Book, (book) => book.invoiceItems)
   @JoinColumn({ name: 'bookId' })
   book: Book;
+
+  @BeforeInsert()
+  assignInvoiceItemCode() {
+    this.invoiceItemCode ??= generateCode(CodePrefix.INVOICE_ITEM);
+  }
 }

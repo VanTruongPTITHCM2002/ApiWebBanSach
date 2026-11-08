@@ -32,11 +32,6 @@ export class OrdersController {
     return this.ordersService.findAll(page, size);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id?: string) {
-    return this.ordersService.findOne(id);
-  }
-
   @Get('/sum')
   async getSumOrders() {
     return this.ordersService.getSumOrders();
@@ -45,6 +40,26 @@ export class OrdersController {
   @Get('/orderDate')
   findByDate(@Query('orderDate') orderDate: string) {
     return this.ordersService.findByDate(orderDate);
+  }
+
+  @Get('/revenue/last-day')
+  getRevenueLastDay(@Query('day') day: string) {
+    return this.ordersService.getRevenueLastDays(+day);
+  }
+
+  @Get('user/:username')
+  @UseGuards(JwtAuthGuard)
+  findByUsername(
+    @Param('username') username: string,
+    @Query('page') page: number = 1,
+    @Query('size') size: number = 50,
+  ) {
+    return this.ordersService.findByUsername(username, page, size);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id?: string) {
+    return this.ordersService.findOne(id);
   }
 
   @Patch(':id')

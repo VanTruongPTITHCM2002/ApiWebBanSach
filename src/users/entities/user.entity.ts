@@ -1,10 +1,12 @@
 import { Account } from '@/accounts/entities/account.entity';
 import { Cart } from '@/carts/entities/cart.entity';
 import { BaseEntity } from '@/common/base.entity';
+import { CodePrefix, generateCode } from '@/common/helpers/code.helper';
 import { Order } from '@/orders/entities/order.entity';
 import { Length } from 'class-validator';
 
 import {
+  BeforeInsert,
   Column,
   Entity,
   JoinColumn,
@@ -17,6 +19,9 @@ import {
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   usersId: string;
+
+  @Column({ length: 32, unique: true, nullable: true })
+  userCode: string;
 
   @Column({ length: 100 })
   @Length(1, 100)
@@ -45,4 +50,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Cart, (cart) => cart.usersId)
   carts: Cart[];
+
+  @BeforeInsert()
+  assignUserCode() {
+    this.userCode ??= generateCode(CodePrefix.USER);
+  }
 }

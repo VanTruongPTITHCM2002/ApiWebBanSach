@@ -1,32 +1,28 @@
-/* eslint-disable prettier/prettier */
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Employee } from './entity/employee.entity';
+import { EmployeesRepository } from './repositories/employees.repository';
+
 @Injectable()
 export class EmployeesService {
-    constructor(
-        @InjectRepository(Employee)
-        private readonly employeeRepository: Repository<Employee>,
-    ) { }
+  constructor(private readonly employeeRepository: EmployeesRepository) {}
 
-    findAll(): Promise<Employee[]> {
-        return this.employeeRepository.find();
-    }
+  findAll(): Promise<Employee[]> {
+    return this.employeeRepository.findMany();
+  }
 
-    findOne(id: number): Promise<Employee> {
-        return this.employeeRepository.findOneBy({ idemployee: id });
-    }
+  findOne(id: string): Promise<Employee> {
+    return this.employeeRepository.findByIdOrCode(id);
+  }
 
-    create(employee: Employee): Promise<Employee> {
-        return this.employeeRepository.save(employee);
-    }
+  create(employee: Employee): Promise<Employee> {
+    return this.employeeRepository.create(employee);
+  }
 
-    async update(id: number, employee: Employee): Promise<void> {
-        await this.employeeRepository.update(id, employee);
-    }
+  async update(id: string, employee: Employee): Promise<void> {
+    await this.employeeRepository.updateById(id, employee);
+  }
 
-    async remove(id: number): Promise<void> {
-        await this.employeeRepository.delete(id);
-    }
+  async remove(id: string): Promise<void> {
+    await this.employeeRepository.deleteById(id);
+  }
 }

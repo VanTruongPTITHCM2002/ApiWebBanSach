@@ -4,9 +4,8 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { QueryFailedError } from 'typeorm';
 
 import { MessageError } from '@/enum/message.error.enum';
@@ -25,21 +24,12 @@ interface ResolvedException {
  */
 @Catch()
 export class GlobalHandlerException implements ExceptionFilter {
-  private readonly logger = new Logger(GlobalHandlerException.name);
   private readonly isDev = process.env.NODE_ENV !== 'production';
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const request = ctx.getRequest<Request>();
     const resolved = this.resolve(exception);
-
-    if (resolved.status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-      this.logger.error(
-        `${request?.method ?? '-'} ${request?.url ?? '-'} -> ${resolved.status}: ${resolved.message}`,
-        exception instanceof Error ? exception.stack : undefined,
-      );
-    }
 
     response
       .status(resolved.status)

@@ -1,181 +1,105 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
 import { UpdateInvoiceDto } from './dto/update-invoice.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Invoice, PaymentStatus } from './entities/invoice.entity';
-import { User } from '@/users/entities/user.entity';
-import { InvoiceItem } from '@/invoiceitem/entities/invoiceitem.entity';
-import { Order } from '@/orders/entities/order.entity';
+import { PaymentMethod, PaymentStatus } from './entities/invoice.entity';
 import { ApiRes } from '@/response/response.dto';
-import { MessageError } from '@/enum/message.error.enum';
+import { InvoicesRepository } from './repositories/invoices.repository';
+import { UsersRepository } from '@/users/repositories/users.repository';
+import { OrdersRepository } from '@/orders/repositories/orders.repository';
+import { InvoiceMapper } from './mappers/invoice.mapper';
 
 @Injectable()
 export class InvoiceService {
   constructor(
-    @InjectRepository(Invoice)
-    private readonly invoiceRepository: Repository<Invoice>,
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    @InjectRepository(InvoiceItem)
-    private readonly invoideItemRepository: Repository<InvoiceItem>,
-    @InjectRepository(Order)
-    private readonly orderRepository: Repository<Order>,
+    private readonly invoiceRepository: InvoicesRepository,
+    private readonly userRepository: UsersRepository,
+    private readonly orderRepository: OrdersRepository,
+    private readonly invoiceMapper: InvoiceMapper,
   ) {}
+
   async create(dto: CreateInvoiceDto) {
-    try {
-      const user = this.userRepository.findOne({
-        where: { usersId: dto.userId },
-      });
+    const user = await this.userRepository.findById(dto.userId);
 
-      if (!user) return ApiRes.notFound('Người dùng không tồn tại');
-
-      const order = this.orderRepository.findOne({
-        where: { orderId: dto.orderId },
-      });
-
-      if (!order) return ApiRes.notFound('Không tìm thấy đơn hàng');
-
-      const subtotal = dto.items.reduce((sum, item) => sum + item.totalLine, 0);
-
-      const vatAmount = dto.vatPercent
-        ? (subtotal * dto.vatPercent) / 100
-        : (dto.vatAmount ?? 0);
-
-      const shippingFee = dto.shippingFee ?? 0;
-      const discount = dto.discountAmount ?? 0;
-      const totalAmount = subtotal + vatAmount + shippingFee - discount;
-
-      // 2️⃣ Khởi tạo entity Invoice
-      const invoice = this.invoiceRepository.create({
-        invoiceCode: dto.invoiceCode ?? `HD${Date.now()}`,
-        order: await order,
-        userId: await user,
-        issueDate: dto.issueDate ?? new Date(),
-        subtotal,
-        vatPercent: dto.vatPercent ?? 0,
-        vatAmount,
-        shippingFee,
-        discountAmount: discount,
-        totalAmount,
-        paymentStatus: dto.paymentStatus ?? PaymentStatus.UNPAID,
-        paymentMethod: dto.paymentMethod,
-        note: dto.note,
-      });
-
-      // 3️⃣ Lưu invoice
-      const savedInvoice = await this.invoiceRepository.save(invoice);
-
-      // 4️⃣ Tạo items và gắn vào invoice
-      const items = dto.items.map((i) =>
-        this.invoideItemRepository.create({
-          invoice: savedInvoice,
-          book: { id: i.bookId } as any,
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
-          discount: i.discount ?? 0,
-          totalLine: i.totalLine,
-        }),
-      );
-      await this.invoideItemRepository.save(items);
-
-      return ApiRes.created('Tạo hóa đơn thành công');
-    } catch (err: any) {
-      console.error(err);
-      return ApiRes.internalServerError(
-        'Có lỗi xảy ra trong quá trình tạo hóa đơn',
-      );
+    if (!user) {
+      throw new NotFoundException('Người dùng không tồn tại');
     }
+
+    const order = await this.orderRepository.findByIdOrCode(dto.orderId);
+
+    if (!order) {
+      throw new NotFoundException('Không tìm thấy đơn hàng');
+    }
+
+    const subtotal = dto.items.reduce((sum, item) => sum + item.totalLine, 0);
+
+    const vatAmount = dto.vatPercent
+      ? (subtotal * dto.vatPercent) / 100
+      : (dto.vatAmount ?? 0);
+
+    const shippingFee = dto.shippingFee ?? 0;
+    const discount = dto.discountAmount ?? 0;
+    const totalAmount = subtotal + vatAmount + shippingFee - discount;
+
+    const savedInvoice = await this.invoiceRepository.createWithItems({
+      invoiceCode: dto.invoiceCode,
+      userId: dto.userId,
+      orderId: dto.orderId,
+      issueDate: dto.issueDate ?? new Date(),
+      subtotal,
+      vatPercent: dto.vatPercent ?? 0,
+      vatAmount,
+      shippingFee,
+      discountAmount: discount,
+      totalAmount,
+      paymentStatus: dto.paymentStatus ?? PaymentStatus.UNPAID,
+      paymentMethod: dto.paymentMethod ?? PaymentMethod.COD,
+      note: dto.note,
+      items: dto.items.map((item) => ({
+        bookId: item.bookId,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        discount: item.discount ?? 0,
+        totalLine: item.totalLine,
+      })),
+    });
+
+    return ApiRes.created('Tạo hóa đơn thành công', {
+      invoiceId: savedInvoice.invoiceId,
+      invoiceCode: savedInvoice.invoiceCode,
+    });
   }
 
   async findAll(page: number, limit: number) {
-    const skip = (page - 1) * limit;
-    const take = limit;
-    try {
-      const [invoices, totalElements] =
-        await this.invoiceRepository.findAndCount({
-          // relations: ['invoiceItems'],
-          // order: { issueDate: 'DESC' },
-          skip,
-          take,
-        });
-
-      const totalPages = Math.ceil(totalElements / limit);
-      return ApiRes.success('Get retrived all invoices', {
-        content: invoices,
-        page,
-        size: limit,
-        totalElements,
-        totalPages,
-        first: page === 1,
-        last: page >= totalPages,
-      });
-    } catch (error) {
-      console.error(error);
-      return ApiRes.internalServerError(
-        'Có lỗi xảy ra trong quá trình lấy danh sách hóa đơn',
-      );
-    }
+    const result = await this.invoiceRepository.findPage(page, limit);
+    return ApiRes.success('Get retrived all invoices', result);
   }
 
   async findOne(id: string) {
-    try {
-      const invoice = await this.invoiceRepository.findOne({
-        where: { invoiceId: id },
-        relations: [
-          'userId',
-          'order',
-          'invoiceItems',
-          'invoiceItems.book',
-          'userId.accountFK',
-        ],
-      });
+    const invoice = await this.invoiceRepository.findByIdOrCodeWithDetails(id);
 
-      if (!invoice) ApiRes.notFound(`Invoice ${id} not found`);
-
-      return ApiRes.success('Get invoice successfully', {
-        invoiceId: invoice.invoiceId,
-        invoiceCode: invoice.invoiceCode,
-        issueDate: invoice.issueDate,
-        totalAmount: invoice.totalAmount,
-        paymentStatus: invoice.paymentStatus,
-        paymentMethod: invoice.paymentMethod,
-        note: invoice.note,
-        username: invoice.userId.accountFK.username,
-        fullName: `${invoice.userId.firstname} ${invoice.userId.lastname}`,
-        orderId: invoice.order.orderId,
-        items: invoice.invoiceItems.map((it) => ({
-          invoiceitemId: it.invoiceitemId,
-          quantity: it.quantity,
-          unitPrice: it.unitPrice,
-          totalLine: it.totalLine,
-          bookid: it.book.bookid,
-          title: it.book.title,
-          image: it.book.thumbnail,
-        })),
-      });
-    } catch (error) {
-      console.error(error);
-      return ApiRes.internalServerError(
-        'Có lỗi xảy ra trong quá trình lấy thông tin hóa dơn',
-      );
+    if (!invoice) {
+      throw new NotFoundException(`Invoice ${id} not found`);
     }
+
+    return ApiRes.success(
+      'Get invoice successfully',
+      this.invoiceMapper.toResponse(invoice),
+    );
   }
 
   async update(id: string, updateInvoiceDto: UpdateInvoiceDto) {
-    try {
-      const invoice: Invoice = await this.invoiceRepository.findOne({
-        where: { invoiceId: id },
-      });
-      invoice.paymentStatus = updateInvoiceDto.status as PaymentStatus;
-      await this.invoiceRepository.update(id, invoice);
+    const invoice = await this.invoiceRepository.findByIdOrCode(id);
 
-      return ApiRes.success('Cập nhật thành công hóa đơn');
-    } catch (err: any) {
-      return ApiRes.internalServerError(
-        'Có lỗi xảy ra trong quá trình cập nhật hóa đơn',
-      );
+    if (!invoice) {
+      throw new NotFoundException(`Invoice ${id} not found`);
     }
+
+    await this.invoiceRepository.updatePaymentStatus(
+      invoice.invoiceId,
+      updateInvoiceDto.status as PaymentStatus,
+    );
+
+    return ApiRes.success('Cập nhật thành công hóa đơn');
   }
 
   remove(id: string) {
@@ -183,19 +107,7 @@ export class InvoiceService {
   }
 
   async getRevenueByInvoice() {
-    try {
-      const invoices = await this.invoiceRepository.find({
-        where: { isActive: true },
-      });
-
-      const sum = invoices.reduce(
-        (total, invoice) => total + invoice.totalAmount,
-        0,
-      );
-      return ApiRes.success('Tổng doanh thu từ hóa đơn', sum);
-    } catch (error) {
-      console.error(error.message);
-      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
-    }
+    const sum = await this.invoiceRepository.sumActiveTotalAmount();
+    return ApiRes.success('Tổng doanh thu từ hóa đơn', sum);
   }
 }

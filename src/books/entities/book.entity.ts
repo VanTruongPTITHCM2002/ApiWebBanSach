@@ -1,11 +1,13 @@
 import { Author } from '@/authors/entities/author.entity';
 import { Category } from '@/categories/entities/category.entity';
 import { BaseEntity } from '@/common/base.entity';
+import { CodePrefix, generateCode } from '@/common/helpers/code.helper';
 import { InvoiceItem } from '@/invoiceitem/entities/invoiceitem.entity';
 import { Orderdetail } from '@/orderdetail/entities/orderdetail.entity';
 import { Publisher } from '@/publishers/entities/publisher.entity';
 import { Review } from '@/reviews/entities/review.entity';
 import {
+  BeforeInsert,
   Column,
   Entity,
   JoinColumn,
@@ -18,6 +20,9 @@ import {
 export class Book extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   bookid: string;
+
+  @Column({ length: 32, unique: true, nullable: true })
+  sku: string;
 
   @Column({ length: 100 })
   title: string;
@@ -60,4 +65,9 @@ export class Book extends BaseEntity {
 
   @Column({ type: 'json', nullable: true })
   images: string[];
+
+  @BeforeInsert()
+  assignSku() {
+    this.sku ??= generateCode(CodePrefix.BOOK);
+  }
 }

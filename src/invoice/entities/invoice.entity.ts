@@ -1,8 +1,10 @@
 import { BaseEntity } from '@/common/base.entity';
+import { CodePrefix, generateCode } from '@/common/helpers/code.helper';
 import { InvoiceItem } from '@/invoiceitem/entities/invoiceitem.entity';
 import { Order } from '@/orders/entities/order.entity';
 import { User } from '@/users/entities/user.entity';
 import {
+  BeforeInsert,
   Column,
   Entity,
   JoinColumn,
@@ -27,7 +29,7 @@ export class Invoice extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   invoiceId: string;
 
-  @Column({ unique: true })
+  @Column({ length: 32, unique: true, nullable: true })
   invoiceCode: string;
 
   @ManyToOne(() => User, (user) => user.usersId)
@@ -72,4 +74,9 @@ export class Invoice extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   note?: string;
+
+  @BeforeInsert()
+  assignInvoiceCode() {
+    this.invoiceCode ??= generateCode(CodePrefix.INVOICE);
+  }
 }

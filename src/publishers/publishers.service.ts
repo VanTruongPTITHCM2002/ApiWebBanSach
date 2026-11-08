@@ -1,151 +1,78 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePublisherDto } from './dto/create-publisher.dto';
 import { UpdatePublisherDto } from './dto/update-publisher.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Publisher } from './entities/publisher.entity';
-import { ILike, Repository } from 'typeorm';
-import { Builder } from 'builder-pattern';
 import { ApiRes } from '@/response/response.dto';
-import { ApiResponse } from '@/response/apires';
 import { filterPublisherQueryDto } from './dto/filter-publisher-query-dto';
+import { PublishersRepository } from './repositories/publishers.repository';
+import { PublisherMapper } from './mappers/publisher.mapper';
 
 @Injectable()
 export class PublishersService {
   constructor(
-    @InjectRepository(Publisher)
-    private readonly publisherRepository: Repository<Publisher>,
+    private readonly publisherRepository: PublishersRepository,
+    private readonly publisherMapper: PublisherMapper,
   ) {}
-  async create(createPublisherDto: CreatePublisherDto) {
-    try {
-      const publisher = await this.publisherRepository.findOne({
-        where: { publisherName: createPublisherDto.publisherName },
-      });
 
-      if (publisher) return ApiRes.badRequest('Nhà xuất bản đã tồn tại');
-      await this.publisherRepository.save(createPublisherDto);
-      return ApiRes.created('Thêm nhà xuất bản thành công');
-    } catch (error) {
-      console.error(error.message);
-      return ApiRes.internalServerError('Xảy ra lỗi trong quá trình thêm');
+  async create(createPublisherDto: CreatePublisherDto) {
+    const publisher = await this.publisherRepository.findByName(
+      createPublisherDto.publisherName,
+    );
+
+    if (publisher) {
+      throw new BadRequestException('Nhà xuất bản đã tồn tại');
     }
+
+    await this.publisherRepository.create(createPublisherDto);
+    return ApiRes.created('Thêm nhà xuất bản thành công');
   }
 
   async findAll(page: number, size: number, filters: filterPublisherQueryDto) {
-    const skip = (page - 1) * size;
-    const take = size;
-    let where: any = {};
-
-    if (filters) {
-      if (filters.search) {
-        where = [
-          {
-            publisherName: ILike(`%${filters.search}%`),
-          },
-          {
-            publisherAddress: ILike(`%${filters.search}%`),
-          },
-        ];
-      }
-    }
-
-    try {
-      const [publishers, totalElements] =
-        await this.publisherRepository.findAndCount({
-          skip,
-          take,
-          where,
-        });
-
-      const totalPages = Math.ceil(totalElements / size);
-      return ApiRes.success('Hiện danh sách nhà xuất bản thành công', {
-        content: publishers,
-        page,
-        size,
-        totalElements,
-        totalPages,
-        first: page === 1,
-        last: page >= totalPages,
-      });
-    } catch (error) {
-      return (
-        Builder<ApiResponse<any>>()
-          .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-          .message('Không thể lấy danh sách nhà xuất bản')
-          // .data(publishers)
-          .build()
-      );
-    }
+    const result = await this.publisherRepository.findPage(page, size, filters);
+    return ApiRes.success('Hiện danh sách nhà xuất bản thành công', result);
   }
 
   async findOne(id: string) {
-    let publisher: Publisher = null;
-    try {
-      publisher = await this.publisherRepository.findOne({
-        where: { publisherId: id },
-      });
-      if (!publisher) {
-        return Builder<ApiResponse<any>>()
-          .statusCode(HttpStatus.NOT_FOUND)
-          .message('Không tìm thấy nhà xuất bản')
-          .data(publisher)
-          .build();
-      }
-    } catch (error) {
-      return Builder<ApiResponse<any>>()
-        .statusCode(HttpStatus.INTERNAL_SERVER_ERROR)
-        .message('Không thể thực hiện tìm kiếm nhà xuất bản')
-        .data(publisher)
-        .build();
+    const publisher = await this.publisherRepository.findByIdOrCode(id);
+
+    if (!publisher) {
+      throw new NotFoundException('Không tìm thấy nhà xuất bản');
     }
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Tìm thành công nhà xuất bản')
-      .data(publisher)
-      .build();
+
+    return ApiRes.success('Tìm thành công nhà xuất bản', publisher);
   }
 
   async findNotPaginate() {
-    const publishers = await this.publisherRepository.find();
+    const publishers = await this.publisherRepository.findMany();
 
-    const publishersResponse = publishers.map((publisher) => {
-      return {
-        name: publisher.publisherName,
-        publisherId: publisher.publisherId,
-      };
-    });
+    const publishersResponse = publishers.map((publisher) =>
+      this.publisherMapper.toSelectResponse(publisher),
+    );
 
     return ApiRes.success('Get publishers successfully', publishersResponse);
   }
 
   async update(id: string, updatePublisherDto: UpdatePublisherDto) {
-    try {
-      await this.publisherRepository.update(id, updatePublisherDto);
-      return ApiRes.success('Cập nhật thành công nhà xuất bản');
-    } catch (error) {
-      console.error(error.message);
-      return ApiRes.internalServerError(
-        'Có lỗi xảy ra trong quá trình cập nhật',
-      );
-    }
+    await this.publisherRepository.updateById(id, updatePublisherDto);
+    return ApiRes.success('Cập nhật thành công nhà xuất bản');
   }
 
   async remove(id: string) {
-    try {
-      const publisher = await this.publisherRepository.findOne({
-        where: { publisherId: id },
-        relations: ['books'],
-      });
+    const publisher =
+      await this.publisherRepository.findByIdOrCodeWithBooks(id);
 
-      if (!publisher) return ApiRes.notFound('Không tìm thấy nhà xuất bản');
-
-      if (publisher.books?.length > 0)
-        return ApiRes.badRequest('Không thể xóa nhà xuất bản');
-
-      await this.publisherRepository.delete(id);
-      return ApiRes.success('Xóa thành công nhà xuất bản');
-    } catch (error) {
-      console.error(error.message);
-      return ApiRes.internalServerError('Có lỗi xảy ra trong quá trình xóa');
+    if (!publisher) {
+      throw new NotFoundException('Không tìm thấy nhà xuất bản');
     }
+
+    if (publisher.books?.length > 0) {
+      throw new BadRequestException('Không thể xóa nhà xuất bản');
+    }
+
+    await this.publisherRepository.deleteById(id);
+    return ApiRes.success('Xóa thành công nhà xuất bản');
   }
 }

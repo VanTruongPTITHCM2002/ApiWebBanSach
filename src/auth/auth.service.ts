@@ -1,70 +1,53 @@
 import { UnauthorizedException } from './../common/exception/unauthorized.exception';
 import {
-  BadRequestException,
   ForbiddenException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { SignUpDto } from './dto/signup.dto';
 
 import { Response } from 'express';
-import { AccountsService } from '@/accounts/accounts.service';
-import { UsersService } from '@/users/users.service';
 import { Account } from '@/accounts/entities/account.entity';
 import { ApiRes } from '@/response/response.dto';
 import { AuthResponse } from '@/response/auth.response';
 import { MessageSuccess } from '@/enum/message.success.enum';
 import { MessageError } from '@/enum/message.error.enum';
 import { ConflictException } from '@/common/exception/conflict.exception';
+import { RoleEnum } from '@/enum/role.enum';
+import { AccountsRepository } from '@/accounts/repositories/accounts.repository';
+import { RolesRepository } from '@/roles/repositories/roles.repository';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name, { timestamp: true });
-
   static readonly ATTRIBUTE_TOKEN = 'access_token';
 
   constructor(
     private readonly jwtService: JwtService,
-    private readonly accountService: AccountsService,
-    private readonly userService: UsersService,
-    @InjectRepository(Account)
-    private accountRepository: Repository<Account>,
+    private readonly accountRepository: AccountsRepository,
+    private readonly roleRepository: RolesRepository,
   ) {}
 
   async signup(signUpDto: SignUpDto): Promise<ApiRes<string>> {
-    try {
-      this.logger.log(
-        'Bắt đầu quá trình đăng ký tài khoản: ',
-        signUpDto.username,
-      );
-      const account = await this.getAccountByUsername(signUpDto.username, true);
-      this.validateUsernameExsists(account);
-      this.validateMatchPassword(signUpDto.password, signUpDto.repassword);
-      const { username, password } = signUpDto;
-      await this.accountService.create({
-        username,
-        password,
-      });
-      return ApiRes.created(
-        `${MessageSuccess.USER_CREATED_SUCESS} ${username}`,
-      );
-    } catch (error: any) {
-      this.logger.log(error.message);
-      if (error instanceof BadRequestException) {
-        return ApiRes.badRequest(error.message);
-      }
+    const { username, password, repassword } = signUpDto;
+    const account = await this.getAccountByUsername(username, true);
+    this.validateUsernameExists(account);
+    this.validateMatchPassword(password, repassword);
 
-      return ApiRes.internalServerError(MessageError.INTERNAL_SERVER_ERROR);
-    } finally {
-      this.logger.log(
-        `Kết thúc quá trình đăng ký tài khoản: ${signUpDto.username}`,
-      );
+    const role = await this.roleRepository.findByName(RoleEnum.USER);
+    if (!role) {
+      throw new NotFoundException(`Role "${RoleEnum.USER}" not found`);
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await this.accountRepository.createWithProfile({
+      username,
+      password: hashedPassword,
+      role,
+    });
+
+    return ApiRes.created(`${MessageSuccess.USER_CREATED_SUCESS} ${username}`);
   }
 
   async postLogin(
@@ -91,16 +74,14 @@ export class AuthService {
   }
 
   async getAccountByUsername(username: string, isCreated = false) {
-    const account = await this.accountRepository.findOne({
-      where: { username: username },
-      relations: ['roleId'],
-    });
+    const account = await this.accountRepository.findByUsername(
+      username,
+      !isCreated,
+    );
 
     if (!isCreated) {
       if (!account) {
-        throw new NotFoundException(
-          `${MessageError.USERNAME_NOT_FOUND} ${username}`,
-        );
+        throw new NotFoundException(MessageError.USERNAME_NOT_FOUND);
       }
 
       if (!account.isActive) {
@@ -127,18 +108,20 @@ export class AuthService {
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
+        path: '/',
         maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : undefined,
       });
     }
     return res.cookie(AuthService.ATTRIBUTE_TOKEN, '', {
       httpOnly: true,
-      secure: true, // bật nếu dùng HTTPS
-      sameSite: 'strict', // hoặc 'Strict' hoặc 'None' nếu cần chia domain
+      secure: false,
+      sameSite: 'lax',
+      path: '/',
       maxAge: 0,
     });
   }
 
-  validateUsernameExsists(account: Account) {
+  validateUsernameExists(account: Account) {
     if (account) {
       throw new ConflictException(
         `${MessageError.USER_EXISTED} ${account.username}`,

@@ -1,9 +1,9 @@
 import {
   IsEnum,
-  IsInt,
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -12,10 +12,10 @@ import { Type } from 'class-transformer';
 import { CreateInvoiceItemDto } from '@/invoiceitem/dto/create-invoiceitem.dto';
 
 export class CreateInvoiceDto {
-  @IsInt()
+  @IsUUID('4')
   orderId: string;
 
-  @IsInt()
+  @IsUUID('4')
   userId: string;
 
   @IsOptional()

@@ -1,51 +1,33 @@
-import {
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateRoleDto } from './dto/create-role.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { Role } from './entities/role.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Builder } from 'builder-pattern';
-import { ApiResponse } from '@/response/apires';
+import { ApiRes } from '@/response/response.dto';
+import { RolesRepository } from './repositories/roles.repository';
 
 @Injectable()
 export class RolesService {
-  constructor(
-    @InjectRepository(Role)
-    private roleRepository: Repository<Role>,
-  ) {}
+  constructor(private readonly roleRepository: RolesRepository) {}
 
   create(createRoleDto: CreateRoleDto) {
-    return this.roleRepository.save(createRoleDto);
+    return this.roleRepository.create(createRoleDto);
   }
 
   async findAll() {
-    let roles: Role[];
-    try {
-      roles = await this.roleRepository.find();
-    } catch (error) {
-      throw new InternalServerErrorException('Không thể lấy danh sách quyền');
-    }
+    const roles = await this.roleRepository.findMany();
 
-    return Builder<ApiResponse<any>>()
-      .statusCode(HttpStatus.OK)
-      .message('Danh sách quyền')
-      .data(roles)
-      .build();
+    return ApiRes.success('Danh sách quyền', roles);
   }
 
   findOne(roleId: string): Promise<Role | null> {
-    return this.roleRepository.findOneBy({ roleId });
+    return this.roleRepository.findById(roleId);
   }
 
-  update(id: number, updateRoleDto: UpdateRoleDto) {
-    return this.roleRepository.update(id, updateRoleDto);
+  update(id: string, updateRoleDto: UpdateRoleDto) {
+    return this.roleRepository.updateById(id, updateRoleDto);
   }
 
-  remove(id: number) {
-    return this.roleRepository.delete(id);
+  remove(id: string) {
+    return this.roleRepository.deleteById(id);
   }
 }

@@ -37,7 +37,6 @@ export class AuthorsController {
     @Query() query: FilterAuthorQueryDto,
   ) {
     const { page: _p, size: _s, ...filters } = query;
-    console.log(_p, _s);
     return this.authorsService.findAll(page, size, filters);
   }
 
